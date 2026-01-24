@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>EG Servicios de Nuevas Tecnologías</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<style>
+:root {
+  --color-principal:#004d40;
+  --color-secundario:#ffc107;
+  --fondo:#f8f9fa;
+}
+body{margin:0;font-family:'Poppins',sans-serif;background:var(--fondo);color:#333;scroll-behavior:smooth;}
+header{background:var(--color-principal);color:#fff;padding:15px 5%;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;}
+header img{height:60px;}
+nav ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;}
+nav li{margin:5px 10px;}
+nav a{text-decoration:none;color:#fff;font-weight:600;}
+nav a:hover{color:var(--color-secundario);}
+.slider{position:relative;width:100%;height:60vh;overflow:hidden;}
+.slides img{position:absolute;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 1.5s ease-in-out;}
+.slides img.active{opacity:1;}
+section{padding:50px 5%;}
+h2{text-align:center;color:var(--color-principal);}
+.services,.products,.emprendedores-lista{display:grid;gap:20px;}
+.services{grid-template-columns:repeat(auto-fit,minmax(250px,1fr));}
+.products{grid-template-columns:repeat(auto-fit,minmax(250px,1fr));}
+.services div,.products div,.emprendedores-lista div{
+  background:#fff;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,0.1);
+  padding:20px;text-align:center;transition:transform 0.3s;
+}
+.services div:hover,.products div:hover,.emprendedores-lista div:hover{transform:translateY(-5px);}
+.services img,.products img,.emprendedores-lista img{width:100%;border-radius:10px;height:200px;object-fit:cover;}
+#registro-emprendedor{
+  max-width:500px;margin:0 auto;background:#fff;border-radius:10px;
+  box-shadow:0 2px 6px rgba(0,0,0,0.1);padding:20px;text-align:left;
+}
+#registro-emprendedor input,#registro-emprendedor textarea{
+  width:100%;padding:10px;margin:8px 0;border:1px solid #ccc;border-radius:5px;
+}
+#registro-emprendedor button{
+  background:var(--color-principal);color:#fff;border:none;padding:10px 20px;border-radius:5px;cursor:pointer;
+}
+footer{background:var(--color-principal);color:#fff;text-align:center;padding:20px;margin-top:30px;}
+#boton-flotante{
+  position:fixed;bottom:25px;right:25px;background:var(--color-secundario);
+  color:var(--color-principal);border:none;border-radius:50%;width:65px;height:65px;
+  display:flex;align-items:center;justify-content:center;font-size:32px;
+  cursor:pointer;box-shadow:0 4px 10px rgba(0,0,0,0.3);transition:all 0.3s ease-in-out;z-index:999;
+}
+#boton-flotante:hover{transform:scale(1.1);background:#ffcf33;}
+/* Chatbot */
+#chatbot{
+  position:fixed;bottom:100px;right:25px;width:320px;background:white;
+  border-radius:10px;box-shadow:0 0 15px rgba(0,0,0,0.3);
+  display:none;flex-direction:column;overflow:hidden;z-index:999;
+}
+#chatbot header{background:var(--color-principal);color:white;padding:10px;text-align:center;}
+#chatbot-mensajes{flex:1;overflow-y:auto;padding:10px;height:300px;}
+#chatbot-input{display:flex;border-top:1px solid #ccc;}
+#chatbot-input input{flex:1;border:none;padding:8px;outline:none;}
+#chatbot-input button{background:var(--color-principal);color:white;border:none;padding:8px;cursor:pointer;}
+#mic-btn{background:var(--color-secundario);border:none;padding:8px;border-radius:50%;margin-left:5px;cursor:pointer;}
+.fade-up{opacity:0;transform:translateY(30px);transition:opacity 1s,transform 1s;}
+.fade-up.visible{opacity:1;transform:translateY(0);}
+@media(max-width:768px){
+  header{flex-direction:column;align-items:flex-start;}
+}
+</style>
+</head>
+<body>
+<header>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Guinea_Equatorial_Coat_of_Arms.svg/120px-Guinea_Equatorial_Coat_of_Arms.svg.png" alt="Logo">
+    <h1>EG Servicios de Nuevas Tecnologías</h1>
+  </div>
+  <nav>
+    <ul>
+      <li><a href="#inicio">Inicio</a></li>
+      <li><a href="#servicios">Servicios</a></li>
+      <li><a href="#productos">Productos</a></li>
+      <li><a href="#emprendedores">Emprendedores</a></li>
+      <li><a href="#pago">Pago</a></li>
+      <li><a href="#contactos">Contactos</a></li>
+    </ul>
+  </nav>
+</header>
+
+<!-- SLIDER -->
+<div id="inicio" class="slider">
+  <div class="slides">
+    <img src="https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=1350&q=80" class="active">
+    <img src="https://images.unsplash.com/photo-1633113213751-3669e8f0b92d?auto=format&fit=crop&w=1350&q=80">
+    <img src="https://images.unsplash.com/photo-1625249009312-b6f95c6b4e61?auto=format&fit=crop&w=1350&q=80">
+  </div>
+</div>
+
+<section id="servicios" class="fade-up">
+  <h2>Servicios de Inteligencia Artificial y Automatización</h2>
+  <div class="services">
+    <div><img src="https://images.unsplash.com/photo-1625249009312-b6f95c6b4e61?auto=format&fit=crop&w=800&q=80"><p>Soluciones digitales para empresas africanas.</p></div>
+    <div><img src="https://images.unsplash.com/photo-1581091870622-7b4e46905c40?auto=format&fit=crop&w=800&q=80"><p>Automatización de procesos con IA.</p></div>
+    <div><img src="https://images.unsplash.com/photo-1633113213751-3669e8f0b92d?auto=format&fit=crop&w=800&q=80"><p>Chatbots y atención virtual personalizada.</p></div>
+  </div>
+</section>
+
+<section id="productos" class="fade-up">
+  <h2>Productos en Guinea Ecuatorial</h2>
+  <div class="products">
+    <div><img src="https://images.unsplash.com/photo-1616628182503-1f6488929208?auto=format&fit=crop&w=800&q=80"><p>Teléfonos inteligentes de última generación.</p></div>
+    <div><img src="https://images.unsplash.com/photo-1543269865-cbf427effbad?auto=format&fit=crop&w=800&q=80"><p>Equipos tecnológicos para PYMES africanas.</p></div>
+    <div><img src="https://images.unsplash.com/photo-1586216582191-3a20d53093e3?auto=format&fit=crop&w=800&q=80"><p>Soluciones locales de software y marketing digital.</p></div>
+  </div>
+</section>
+
+<section id="emprendedores" class="fade-up">
+  <h2>Emprendedores de Guinea Ecuatorial</h2>
+  <p style="text-align:center;">Regístrate para publicar tus servicios o productos.</p>
+  <form id="registro-emprendedor">
+    <input type="text" id="nombre" placeholder="Tu nombre o empresa" required>
+    <input type="email" id="correo" placeholder="Correo electrónico" required>
+    <input type="text" id="titulo" placeholder="Servicio o producto" required>
+    <textarea id="descripcion" placeholder="Describe tu servicio o producto" required></textarea>
+    <input type="text" id="imagen" placeholder="URL de imagen (opcional)">
+    <button type="submit">Publicar</button>
+  </form>
+  <div class="emprendedores-lista" id="lista-emprendedores"></div>
+</section>
+
+<section id="contactos" class="fade-up">
+  <h2>Contactos</h2>
+  <p style="text-align:center;font-size:18px;">📧 emailconradoromeo@gmail.com</p>
+</section>
+
+<section id="pago" class="fade-up">
+  <h2>Pago con Muni Dinero</h2>
+  <form id="formPago">
+    <input type="text" id="cliente" placeholder="Nombre del cliente" required>
+    <input type="number" id="monto" placeholder="Monto (XAF)" required>
+    <button type="submit"><span class="material-icons">payment</span> Pagar</button>
+  </form>
+  <div id="comprobante" style="display:none;text-align:center;margin-top:10px;">
+    <h3>✅ Pago realizado con éxito</h3>
+    <p id="detallesPago"></p>
+  </div>
+</section>
+
+<footer>
+  <p>© 2025 EG Servicios de Nuevas Tecnologías — Todos los derechos reservados.</p>
+</footer>
+
+<!-- Botón flotante y Chatbot -->
+<button id="boton-flotante" title="Ir al pago"><span class="material-icons">account_balance_wallet</span></button>
+
+<div id="chatbot">
+  <header>🤖 EG Asistente Virtual</header>
+  <div id="chatbot-mensajes"></div>
+  <div id="chatbot-input">
+    <input type="text" id="chatbot-texto" placeholder="Escribe o habla...">
+    <button id="mic-btn"><span class="material-icons">mic</span></button>
+    <button onclick="enviarMensaje()">Enviar</button>
+  </div>
+</div>
+
+<script>
+// Slider
+let current=0;const imgs=document.querySelectorAll('.slides img');
+setInterval(()=>{imgs[current].classList.remove('active');current=(current+1)%imgs.length;imgs[current].classList.add('active');},4000);
+
+// Fade anim
+const fades=document.querySelectorAll('.fade-up');
+window.addEventListener('scroll',()=>{fades.forEach(el=>{if(el.getBoundingClientRect().top<window.innerHeight-100)el.classList.add('visible');});});
+
+// Pago
+document.getElementById('formPago').addEventListener('submit',e=>{
+  e.preventDefault();
+  const c=document.getElementById('cliente').value,m=document.getElementById('monto').value;
+  document.getElementById('detallesPago').textContent=`Cliente: ${c} | Monto: ${m} XAF`;
+  document.getElementById('comprobante').style.display='block';
+  e.target.reset();
+});
+
+// Registro emprendedores
+document.getElementById('registro-emprendedor').addEventListener('submit',e=>{
+  e.preventDefault();
+  const n=document.getElementById('nombre').value,t=document.getElementById('titulo').value,
+        d=document.getElementById('descripcion').value,img=document.getElementById('imagen').value||'https://images.unsplash.com/photo-1581091870622-7b4e46905c40?auto=format&fit=crop&w=800&q=80';
+  const cont=document.getElementById('lista-emprendedores');
+  const div=document.createElement('div');
+  div.innerHTML=`<img src="${img}"><h3>${t}</h3><p>${d}</p><small>Publicado por: ${n}</small>`;
+  cont.appendChild(div);
+  e.target.reset();
+});
+
+// Botón flotante
+document.getElementById('boton-flotante').addEventListener('click',()=>{
+  document.querySelector('#pago').scrollIntoView({behavior:'smooth'});
+});
+
+// Chatbot
+const chatbot=document.getElementById('chatbot');
+const mensajes=document.getElementById('chatbot-mensajes');
+const botonChat=document.createElement('button');
+botonChat.textContent='💬';
+Object.assign(botonChat.style,{
+  position:'fixed',bottom:'100px',left:'25px',background:'#004d40',color:'#fff',border:'none',borderRadius:'50%',width:'60px',height:'60px',fontSize:'28px',cursor:'pointer',zIndex:999
+});
+document.body.appendChild(botonChat);
+botonChat.onclick=()=>{chatbot.style.display=chatbot.style.display==='flex'?'none':'flex';};
+
+// Voz salida
+function hablar(texto){const voz=new SpeechSynthesisUtterance(texto);voz.lang='es-ES';voz.rate=1;speechSynthesis.speak(voz);}
+
+// Chatbot respuestas
+function responder(texto){
+  let respuesta="No entendí tu pregunta. Puedes hablar sobre registro, servicios, pagos o contacto.";
+  const lower=texto.toLowerCase();
+  if(lower.includes('hola'))respuesta="¡Hola! 👋 Soy tu asistente de EG Servicios de Nuevas Tecnologías.";
+  else if(lower.includes('registrar'))respuesta="Puedes registrarte en la sección Emprendedores para publicar tus servicios.";
+  else if(lower.includes('servicio'))respuesta="Ofrecemos inteligencia artificial, automatización, marketing y más.";
+  else if(lower.includes('pago'))respuesta="Puedes realizar tu pago fácilmente con Muni Dinero en la sección de pago.";
+  else if(lower.includes('contacto'))respuesta="Puedes escribirnos a emailconradoromeo@gmail.com.";
+  else if(lower.includes('gracias'))respuesta="¡De nada! Me alegra poder ayudarte 😊.";
+  mensajes.innerHTML+=`<div style="text-align:left;margin:5px;color:#004d40;"><b>🤖 EG Bot:</b> ${respuesta}</div>`;
+  hablar(respuesta);
+  mensajes.scrollTop=mensajes.scrollHeight;
+}
+
+// Enviar texto
+function enviarMensaje(){
+  const input=document.getElementById('chatbot-texto');
+  const texto=input.value.trim();
+  if(!texto)return;
+  mensajes.innerHTML+=`<div style="text-align:right;margin:5px;"><b>Tú:</b> ${texto}</div>`;
+  responder(texto);
+  input.value='';
+}
+
+// Reconocimiento de voz
+let reconocimiento;
+if('webkitSpeechRecognition' in window){
+  reconocimiento=new webkitSpeechRecognition();
+  reconocimiento.lang='es-ES';
+  reconocimiento.continuous=false;
+  reconocimiento.interimResults=false;
+  reconocimiento.onresult=function(e){
+    const texto=e.results[0][0].transcript;
+    mensajes.innerHTML+=`<div style="text-align:right;margin:5px;"><b>Tú (voz):</b> ${texto}</div>`;
+    responder(texto);
+  };
+}
+document.getElementById('mic-btn').addEventListener('click',()=>{
+  if(reconocimiento){reconocimiento.start();}
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,1539 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Salon Manager Pro | Gestión Completa (F CFA)</title>
+    
+    <!-- LIBRERÍAS EXTERNAS PARA PDF (CDN) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+
+    <style>
+        /* --- 1. ESTILOS CSS --- */
+        :root {
+            --primary: #2c3e50;       /* Azul oscuro */
+            --secondary: #34495e;     /* Azul grisaceo */
+            --accent: #d4af37;        /* Dorado */
+            --bg-body: #f4f7f6;
+            --white: #ffffff;
+            --success: #27ae60;       /* Verde */
+            --danger: #c0392b;        /* Rojo */
+            --info: #2980b9;          /* Azul brillante */
+            --text: #333;
+            --border: #ddd;
+        }
+
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
+        
+        body { background: var(--bg-body); color: var(--text); padding-bottom: 50px; }
+
+        /* HEADER */
+        header { background: var(--primary); color: var(--accent); padding: 1.5rem; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        header h1 { font-weight: 300; letter-spacing: 2px; text-transform: uppercase; font-size: 1.8rem; }
+
+        /* NAVEGACIÓN (TABS) */
+        .nav-tabs { display: flex; justify-content: center; background: var(--secondary); padding: 15px; gap: 10px; flex-wrap: wrap; }
+        .tab-btn {
+            background: transparent; border: 1px solid var(--accent); color: var(--white);
+            padding: 10px 15px; cursor: pointer; border-radius: 30px; transition: all 0.3s ease; font-size: 0.9rem;
+        }
+        .tab-btn:hover { background: rgba(212, 175, 55, 0.2); }
+        .tab-btn.active { background: var(--accent); color: var(--primary); font-weight: bold; border-color: var(--accent); }
+
+        /* CONTENEDORES PRINCIPALES */
+        .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; display: none; animation: fadeIn 0.5s; }
+        .container.active-view { display: grid; gap: 25px; }
+        .grid-layout { grid-template-columns: 1fr 2fr; } /* 1 columna izq, 2 col der */
+        .grid-3 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+        .grid-2 { grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); }
+
+        @media(max-width: 850px) { 
+            .grid-layout { grid-template-columns: 1fr; } 
+            .grid-2 { grid-template-columns: 1fr; }
+        }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* TARJETAS (CARDS) */
+        .card { background: var(--white); padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-top: 4px solid var(--accent); }
+        .card h2 { color: var(--primary); margin-bottom: 20px; border-bottom: 2px solid #f0f0f0; padding-bottom: 10px; font-size: 1.4rem; }
+
+        /* FORMULARIOS */
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 5px; color: var(--secondary); }
+        input, select, textarea { width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 1rem; transition: border 0.3s; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--info); }
+
+        /* BOTONES */
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 6px; cursor: pointer; color: white; font-weight: bold; font-size: 1rem; transition: transform 0.1s, opacity 0.2s; text-transform: uppercase; margin-top: 5px; }
+        .btn:active { transform: scale(0.98); }
+        .btn:hover { opacity: 0.9; }
+
+        .btn-main { background: var(--primary); color: var(--accent); }
+        .btn-success { background: var(--success); }
+        .btn-danger { background: var(--danger); }
+        .btn-info { background: var(--info); }
+        .btn-secondary { background: #6c757d; }
+        
+        /* Botones pequeños de tabla */
+        .btn-sm { padding: 6px 12px; font-size: 0.8rem; width: auto; display: inline-flex; align-items: center; justify-content: center; gap: 5px; margin-right: 5px; text-transform: none; margin-top: 0; }
+        .btn-stock { width: 30px; height: 30px; border-radius: 50%; padding: 0; margin: 0 5px; font-size: 1.2rem;}
+
+        /* TABLAS */
+        .table-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #f8f9fa; color: var(--primary); font-weight: 700; }
+        tr:hover { background-color: #fcfcfc; }
+
+        /* ESTADOS VISUALES */
+        .status-completed { text-decoration: line-through; color: #999; }
+        .text-pos { color: var(--success); font-weight: bold; }
+        .text-neg { color: var(--danger); font-weight: bold; }
+        
+        .balance-box { background: #e8f8f5; padding: 20px; border-radius: 8px; text-align: center; margin-top: 20px; border: 1px solid #c3e6cb; }
+        .balance-amount { font-size: 2rem; font-weight: bold; display: block; margin-top: 5px; }
+        .low-stock { background-color: #fcebeb; border-left: 5px solid var(--danger); }
+        
+        .export-buttons-group { display: flex; gap: 10px; margin-top: 20px; justify-content: center;}
+        
+        /* ADMIN ESPECÍFICO */
+        .config-item { padding: 15px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .config-item:last-child { border-bottom: none; }
+        .config-item strong { color: var(--primary); }
+        .reset-warning { 
+            background: #fef0f0; border: 2px solid var(--danger); padding: 20px; border-radius: 8px; 
+            text-align: center; margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1 id="salonTitle">SISTEMA PELUQUERIA LITTLE ANGELES BEAUTIFUL</h1>
+    </header>
+
+    <!-- PESTAÑAS DE NAVEGACIÓN -->
+    <nav class="nav-tabs">
+        <button class="tab-btn active" onclick="app.switchTab('agenda')">📅 Agenda & Citas</button>
+        <button class="tab-btn" onclick="app.switchTab('cashflow')">💰 Flujo de Caja</button>
+        <button class="tab-btn" onclick="app.switchTab('clients')">👥 Clientes (CRM)</button>
+        <button class="tab-btn" onclick="app.switchTab('inventory')">📦 Inventario & Compras</button>
+        <button class="tab-btn" onclick="app.switchTab('sales')">🛒 Venta de Productos</button>
+        <button class="tab-btn" onclick="app.switchTab('invoicing')">🧾 Facturación</button>
+        <button class="tab-btn" onclick="app.switchTab('admin')">⚙️ Administrador del Sistema</button>
+    </nav>
+
+    <!-- ========================================== -->
+    <!-- VISTA 1: AGENDA (CITAS) -->
+    <!-- ========================================== -->
+    <div id="view-agenda" class="container active-view grid-layout">
+        
+        <!-- COLUMNA IZQUIERDA: FORMULARIO -->
+        <div class="card">
+            <h2>Nueva Cita</h2>
+            <form id="bookingForm" onsubmit="app.addAppointment(event)">
+                <div class="form-group">
+                    <label>Nombre Cliente</label>
+                    <input type="text" id="apptName" placeholder="Ej. María López" required>
+                </div>
+                <div class="form-group">
+                    <label>Servicio</label>
+                    <!-- Precios actualizados a F CFA (ejemplos) -->
+                    <select id="apptService" required>
+                        <option value="" disabled selected>Seleccionar...</option>
+                        <option value="Corte Dama - 15000">Corte Dama (15,000 F CFA)</option>
+                        <option value="Corte Caballero - 5000">Corte Caballero (5,000 F CFA)</option>
+                        <option value="Tinte Completo - 35000">Tinte Completo (35,000 F CFA)</option>
+                        <option value="Mechas - 25000">Mechas (25,000 F CFA)</option>
+                        <option value="Peinado - 12000">Peinado (12,000 F CFA)</option>
+                        <option value="Manicura - 8000">Manicura (8,000 F CFA)</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-main">📅 Agendar Cita</button>
+            </form>
+            <div class="export-buttons-group">
+                <button onclick="app.exportToCSV('appointments')" class="btn btn-secondary btn-sm">📥 Exportar Agenda (CSV)</button>
+            </div>
+        </div>
+
+        <!-- COLUMNA DERECHA: TABLA Y FILTROS -->
+        <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap;">
+                <h2 style="margin:0; border:none;">Listado de Citas</h2>
+                <button onclick="app.exportAgendaPDF()" class="btn btn-info btn-sm">📄 Descargar Reporte PDF</button>
+            </div>
+            
+            <div class="filters-bar">
+                <span>🔍 Filtros:</span>
+                <input type="text" id="searchName" placeholder="Buscar por nombre..." onkeyup="app.renderAppointments()">
+                <input type="date" id="filterDate" onchange="app.renderAppointments()">
+                <button class="btn btn-secondary btn-sm" onclick="app.resetFilters()" style="width:auto;">Limpiar</button>
+            </div>
+
+            <div class="table-responsive">
+                <table id="agendaTable">
+                    <thead>
+                        <tr>
+                            <th>Fecha/Hora</th>
+                            <th>Cliente</th>
+                            <th>Servicio</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="agendaBody">
+                        <!-- Contenido generado por JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            <p id="emptyAgenda" style="text-align:center; padding:20px; color:#999; display:none;">No se encontraron citas.</p>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- VISTA 2: FLUJO DE CAJA (FINANZAS) -->
+    <!-- ========================================== -->
+    <div id="view-cashflow" class="container grid-layout">
+        
+        <!-- COLUMNA IZQUIERDA: REGISTRO (Para transacciones NO automáticas como servicios o compras) -->
+        <div class="card">
+            <h2>Registrar Ingreso/Gasto Manual</h2>
+            <p style="margin-bottom: 20px; font-size: 0.9rem; color: var(--danger);">Las ventas y compras de inventario se registran automáticamente en sus respectivos módulos.</p>
+            <form id="financeForm" onsubmit="app.addTransactionManual(event)">
+                <div class="form-group">
+                    <label>Tipo de Movimiento</label>
+                    <select id="finType" required>
+                        <option value="ingreso">📈 Ingreso Manual</option>
+                        <option value="gasto">📉 Gasto Manual</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Descripción</label>
+                    <input type="text" id="finDesc" placeholder="Ej. Propina, Pago Luz, Transferencia bancaria..." required>
+                </div>
+                <div class="form-group">
+                    <label>Monto (F CFA)</label>
+                    <input type="number" id="finAmount" min="0" step="1" placeholder="0" required>
+                </div>
+                <button type="submit" class="btn btn-success">💰 Registrar</button>
+            </form>
+
+            <div class="balance-box">
+                <span>Balance Actual (F CFA)</span>
+                <span id="balanceDisplay" class="balance-amount">0 F CFA</span>
+            </div>
+            <div class="export-buttons-group">
+                <button onclick="app.exportToCSV('transactions')" class="btn btn-secondary btn-sm">📥 Exportar Flujo (CSV)</button>
+            </div>
+        </div>
+
+        <!-- COLUMNA DERECHA: HISTORIAL -->
+        <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap;">
+                <h2 style="margin:0; border:none;">Movimientos de Caja (Total)</h2>
+                <button onclick="app.exportFinancePDF()" class="btn btn-info btn-sm">📄 Reporte Financiero PDF</button>
+            </div>
+
+            <div class="table-responsive">
+                <table id="financeTable">
+                    <thead>
+                        <tr>
+                            <th>Tipo</th>
+                            <th>Descripción</th>
+                            <th>Monto (F CFA)</th>
+                            <th>Origen</th>
+                        </tr>
+                    </thead>
+                    <tbody id="financeBody">
+                        <!-- Contenido generado por JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            <p id="emptyFinance" style="text-align:center; padding:20px; color:#999; display:none;">No hay movimientos registrados.</p>
+        </div>
+    </div>
+    
+    <!-- ========================================== -->
+    <!-- VISTA 3: CLIENTES (CRM) -->
+    <!-- ========================================== -->
+    <div id="view-clients" class="container grid-layout">
+        
+        <!-- COLUMNA IZQUIERDA: FORMULARIO CLIENTE -->
+        <div class="card">
+            <h2>Registrar Cliente</h2>
+            <form id="clientForm" onsubmit="app.addClient(event)">
+                <input type="hidden" id="clientId">
+                <div class="form-group">
+                    <label>Nombre Completo</label>
+                    <input type="text" id="clientName" placeholder="Nombre Apellido" required>
+                </div>
+                <div class="form-group">
+                    <label>Teléfono</label>
+                    <input type="tel" id="clientPhone" placeholder="Teléfono" required>
+                </div>
+                <div class="form-group">
+                    <label>Notas / Preferencias</label>
+                    <textarea id="clientNotes" rows="3" placeholder="Ej. Prefiere tinte sin amoniaco..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-main" id="clientSubmitBtn">👥 Guardar Cliente</button>
+                <button type="button" class="btn btn-secondary" onclick="app.resetClientForm()" style="margin-top:10px;">Limpiar Formulario</button>
+            </form>
+            <div class="export-buttons-group">
+                <button onclick="app.exportToCSV('clients')" class="btn btn-secondary btn-sm">📥 Exportar Clientes (CSV)</button>
+            </div>
+        </div>
+
+        <!-- COLUMNA DERECHA: LISTADO CLIENTES -->
+        <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; flex-wrap:wrap;">
+                <h2 style="margin:0; border:none;">Base de Clientes (CRM)</h2>
+                <input type="text" id="clientSearch" placeholder="Buscar por nombre o teléfono..." onkeyup="app.renderClients()" style="width: 250px;">
+            </div>
+
+            <div class="table-responsive">
+                <table id="clientsTable">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Contacto</th>
+                            <th>Notas</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="clientsBody">
+                        <!-- Contenido generado por JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            <p id="emptyClients" style="text-align:center; padding:20px; color:#999; display:none;">No hay clientes registrados.</p>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- VISTA 4: INVENTARIO & COMPRAS (NUEVO) -->
+    <!-- ========================================== -->
+    <div id="view-inventory" class="container grid-3">
+        
+        <!-- CARD 1: FORMULARIO PRODUCTO -->
+        <div class="card">
+            <h2>Añadir Nuevo Producto</h2>
+            <form id="productForm" onsubmit="app.addProduct(event)">
+                <div class="form-group">
+                    <label>Nombre del Producto</label>
+                    <input type="text" id="productName" placeholder="Ej. Champú Reparador" required>
+                </div>
+                <div class="form-group">
+                    <label>Precio de Venta (F CFA)</label>
+                    <input type="number" id="productPrice" min="1" step="1" placeholder="5000" required>
+                </div>
+                <div class="form-group">
+                    <label>Alerta de Stock Mínimo</label>
+                    <input type="number" id="productAlert" min="0" step="1" value="5" required>
+                </div>
+                <button type="submit" class="btn btn-main">➕ Guardar Producto</button>
+            </form>
+            <div class="export-buttons-group">
+                <button onclick="app.exportToCSV('inventory')" class="btn btn-secondary btn-sm">📥 Exportar Inventario (CSV)</button>
+            </div>
+        </div>
+
+        <!-- CARD 2: REGISTRO DE COMPRA (MÓDULO COMPRAS) -->
+        <div class="card">
+            <h2>📦 Registrar Compra a Proveedor</h2>
+            <form id="purchaseForm" onsubmit="app.addPurchase(event)">
+                <div class="form-group">
+                    <label>Proveedor/Factura Ref.</label>
+                    <input type="text" id="purchaseSupplier" placeholder="Ej. Distribuidor X" required>
+                </div>
+                <div class="form-group">
+                    <label>Producto Comprado</label>
+                    <select id="purchaseProduct" required>
+                        <option value="" disabled selected>Seleccionar producto...</option>
+                        <!-- Opciones generadas por JS -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <div style="display:flex; gap:10px">
+                        <div style="flex:1"><label>Cantidad Comprada</label><input type="number" id="purchaseQty" min="1" step="1" value="1" required></div>
+                        <div style="flex:1"><label>Costo Unitario (F CFA)</label><input type="number" id="purchaseCost" min="1" step="1" placeholder="3000" required></div>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-danger">📉 Registrar Compra & Aumentar Stock</button>
+            </form>
+        </div>
+
+        <!-- CARD 3: LISTADO INVENTARIO RESUMEN -->
+        <div class="card">
+            <h2 style="margin:0; border:none;">Inventario y Stock</h2>
+            <p id="emptyInventory" style="text-align:center; padding:20px; color:#999; display:none;">No hay productos en el inventario.</p>
+            
+            <div class="table-responsive">
+                <table id="inventoryTable">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Stock</th>
+                            <th>Precio Venta</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventoryBody">
+                        <!-- Contenido generado por JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- VISTA 5: VENTA DE PRODUCTOS (NUEVO) -->
+    <!-- ========================================== -->
+    <div id="view-sales" class="container grid-layout">
+        
+        <!-- COLUMNA IZQUIERDA: REGISTRO DE VENTA -->
+        <div class="card">
+            <h2>🛒 Registrar Venta de Producto</h2>
+            <form id="salesForm" onsubmit="app.addSale(event)">
+                <div class="form-group">
+                    <label>Producto a Vender</label>
+                    <select id="saleProduct" required>
+                        <option value="" disabled selected>Seleccionar producto...</option>
+                        <!-- Opciones generadas por JS -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <div style="display:flex; gap:10px">
+                        <div style="flex:1"><label>Cantidad</label><input type="number" id="saleQty" min="1" step="1" value="1" required></div>
+                        <div style="flex:1"><label>Precio Venta (F CFA)</label><input type="number" id="salePriceDisplay" disabled style="background:#f9f9f9; color:var(--success);"></div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Cliente (Opcional)</label>
+                    <input type="text" id="saleClient" placeholder="Nombre del cliente o 'Venta General'">
+                </div>
+                <button type="submit" class="btn btn-success">💰 Registrar Venta & Descontar Stock</button>
+            </form>
+            
+            <div style="margin-top: 30px;">
+                <h3>Historial de Ventas de Productos</h3>
+                <div class="table-responsive">
+                    <table id="productSalesTable">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th>Cantidad</th>
+                                <th>Monto</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productSalesBody">
+                            <!-- Contenido generado por JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- COLUMNA DERECHA: ESTADÍSTICAS / RESUMEN -->
+        <div class="card">
+            <h2>Generar Factura de Venta</h2>
+            <p style="color:var(--info); font-weight:bold;">Una vez que la venta se registra, puedes generar la factura en el módulo de Facturación.</p>
+            
+            <!-- Contenido para futuras expansiones -->
+            <div style="margin-top: 20px;">
+                <h3>Estadísticas Rápidas</h3>
+                <p>Total de productos vendidos: <strong id="totalProductsSold">0</strong></p>
+                <p>Ingreso total por productos: <strong id="totalProductRevenue">0 F CFA</strong></p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- ========================================== -->
+    <!-- VISTA 6: FACTURACIÓN (NUEVO) -->
+    <!-- ========================================== -->
+    <div id="view-invoicing" class="container grid-layout">
+        
+        <!-- COLUMNA IZQUIERDA: ACCIONES -->
+        <div class="card">
+            <h2>Generación Automática de Facturas</h2>
+            <p>Este módulo genera facturas electrónicas secuenciales para todos los ingresos registrados.</p>
+            
+            <div class="form-group" style="margin-top: 20px;">
+                <label>Seleccionar Ingreso para Facturar</label>
+                <select id="transactionToInvoice">
+                    <option value="" disabled selected>Seleccione un ingreso (Cita o Venta)...</option>
+                    <!-- Ingresos pendientes generados por JS -->
+                </select>
+            </div>
+            
+            <button class="btn btn-info" onclick="app.createInvoice()">🧾 Generar Factura Electrónica</button>
+            <p style="margin-top:15px; text-align:center;">Próximo Número de Factura: <strong id="nextInvoiceNumber">FCT-0001</strong></p>
+        </div>
+
+        <!-- COLUMNA DERECHA: HISTORIAL DE FACTURAS -->
+        <div class="card">
+            <h2>Historial de Facturas Emitidas</h2>
+            <div class="table-responsive">
+                <table id="invoicesTable">
+                    <thead>
+                        <tr>
+                            <th>No. Factura</th>
+                            <th>Descripción</th>
+                            <th>Monto (F CFA)</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="invoicesBody">
+                        <!-- Contenido generado por JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            <p id="emptyInvoices" style="text-align:center; padding:20px; color:#999; display:none;">Aún no hay facturas emitidas.</p>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- VISTA 7: ADMINISTRADOR DEL SISTEMA (NUEVO) -->
+    <!-- ========================================== -->
+    <div id="view-admin" class="container grid-2">
+        
+        <!-- CARD 1: CONFIGURACIÓN GLOBAL -->
+        <div class="card">
+            <h2>⚙️ Configuración del Sistema</h2>
+            <form id="adminConfigForm" onsubmit="app.updateAdminConfig(event)">
+                <div class="form-group">
+                    <label for="salonName">Nombre del Salón</label>
+                    <input type="text" id="salonName" placeholder="Ej. Peluquería Brillo" required>
+                </div>
+                <div class="form-group">
+                    <label for="taxRate">Tasa de Impuestos (IVA, %)</label>
+                    <input type="number" id="taxRate" min="0" max="100" step="0.1" required>
+                </div>
+                <div class="config-item">
+                    <span>Moneda Principal</span>
+                    <strong>F CFA</strong> <!-- Moneda fijada en el código -->
+                </div>
+                <button type="submit" class="btn btn-main">💾 Guardar Configuración</button>
+            </form>
+        </div>
+
+        <!-- CARD 2: GESTIÓN DE DATOS Y ESTADO -->
+        <div class="card">
+            <h2>🚨 Gestión de Datos y Mantenimiento</h2>
+            <div class="config-item">
+                <span>App ID (Entorno)</span>
+                <strong id="appIdDisplay">N/A</strong>
+            </div>
+            <div class="config-item">
+                <span>Total de Citas</span>
+                <strong id="apptCount">0</strong>
+            </div>
+            <div class="config-item">
+                <span>Total de Clientes</span>
+                <strong id="clientCount">0</strong>
+            </div>
+            <div class="config-item">
+                <span>Total de Transacciones</span>
+                <strong id="transactionCount">0</strong>
+            </div>
+            
+            <div class="reset-warning">
+                <h3>Restablecer Sistema</h3>
+                <p style="margin-bottom: 15px;">⚠️ Esta acción eliminará **TODOS** los datos almacenados (Citas, Clientes, Inventario, Finanzas, etc.).</p>
+                <button class="btn btn-danger" onclick="app.resetAllData()">💥 Reiniciar Base de Datos</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- --- 2. LÓGICA JAVASCRIPT --- -->
+    <script>
+        // Función para manejar la simulación de alerta sin usar alert() o confirm()
+        function showNotification(message) {
+            console.log(`[NOTIFICACIÓN] ${message}`);
+            // En una app real, aquí se mostraría un modal o toast.
+        }
+
+        const app = {
+            // 2.1. Gestión de Datos y Persistencia (localStorage)
+            data: {
+                appointments: JSON.parse(localStorage.getItem('salonAppts')) || [],
+                transactions: JSON.parse(localStorage.getItem('salonTrans')) || [],
+                clients: JSON.parse(localStorage.getItem('salonClients')) || [],
+                inventory: JSON.parse(localStorage.getItem('salonInventory')) || [],
+                productSales: JSON.parse(localStorage.getItem('salonProductSales')) || [], // Ventas de productos
+                invoices: JSON.parse(localStorage.getItem('salonInvoices')) || [], // Historial de facturas
+                invoiceCounter: parseInt(localStorage.getItem('invoiceCount')) || 1, // Contador secuencial
+                // NUEVO: Configuración del Administrador
+                adminConfig: JSON.parse(localStorage.getItem('salonAdminConfig')) || {
+                    salonName: 'Salon Manager Pro',
+                    taxRate: 0 
+                }
+            },
+            
+            CURRENCY: 'F CFA', // Unidad monetaria
+            
+            init: function() {
+                // Configuración inicial de fecha actual
+                const today = new Date().toISOString().split('T')[0];
+                // Comprobación segura de existencia del elemento antes de asignar valor
+                const filterDateEl = document.getElementById('filterDate');
+                if (filterDateEl) filterDateEl.value = today;
+                
+                // Renderiza todos los módulos
+                this.renderAll();
+                
+                // Asignar listeners para actualizar precios de venta en el módulo de Ventas
+                const saleProductEl = document.getElementById('saleProduct');
+                if (saleProductEl) saleProductEl.addEventListener('change', this.updateSalePrice.bind(this));
+            },
+            
+            renderAll: function() {
+                this.renderAppointments();
+                this.renderFinance();
+                this.renderClients();
+                this.renderInventory(); // Rellena la tabla de inventario
+                this.fillInventorySelects(); // Rellena selects de Compra y Venta
+                this.renderProductSales();
+                this.renderInvoices();
+                this.renderAdmin(); // NUEVO: Renderiza el módulo de administración
+                this.updateNextInvoiceNumber();
+                
+                // Actualiza el título del header
+                document.getElementById('salonTitle').textContent = `💇‍♀️ ${this.data.adminConfig.salonName} (${this.CURRENCY})`;
+            },
+
+            save: function() {
+                // Guarda todos los arrays en localStorage y refresca las vistas
+                localStorage.setItem('salonAppts', JSON.stringify(this.data.appointments));
+                localStorage.setItem('salonTrans', JSON.stringify(this.data.transactions));
+                localStorage.setItem('salonClients', JSON.stringify(this.data.clients));
+                localStorage.setItem('salonInventory', JSON.stringify(this.data.inventory));
+                localStorage.setItem('salonProductSales', JSON.stringify(this.data.productSales));
+                localStorage.setItem('salonInvoices', JSON.stringify(this.data.invoices));
+                localStorage.setItem('invoiceCount', this.data.invoiceCounter.toString());
+                localStorage.setItem('salonAdminConfig', JSON.stringify(this.data.adminConfig)); // GUARDA CONFIG
+                
+                this.renderAll();
+            },
+
+            // 2.2. GESTIÓN DE PESTAÑAS
+            switchTab: function(tabName) {
+                document.querySelectorAll('.container').forEach(el => el.classList.remove('active-view'));
+                document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+                
+                const viewEl = document.getElementById(`view-${tabName}`);
+                if (viewEl) viewEl.classList.add('active-view');
+                
+                const buttonEl = document.querySelector(`.tab-btn[onclick*="${tabName}"]`);
+                if (buttonEl) buttonEl.classList.add('active');
+            },
+            
+            // 2.3. LÓGICA AGENDA (Citas y Servicios)
+            addAppointment: function(e) {
+                e.preventDefault();
+                
+                const serviceValue = document.getElementById('apptService').value;
+                const date = new Date().toISOString().split('T')[0];
+                const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                if (!serviceValue) { showNotification("Selecciona un servicio."); return; }
+                
+                const newAppt = {
+                    id: Date.now(),
+                    name: document.getElementById('apptName').value,
+                    phone: '', // Teléfono simplificado por espacio
+                    date: date,
+                    time: time,
+                    service: serviceValue,
+                    completed: false
+                };
+                this.data.appointments.push(newAppt);
+                this.save();
+                e.target.reset(); 
+            },
+
+            toggleComplete: function(id) {
+                const appt = this.data.appointments.find(a => a.id === id);
+                if(appt) {
+                    appt.completed = !appt.completed;
+                    
+                    // Si se marca como completado, registra el ingreso en Flujo de Caja
+                    if (appt.completed) {
+                        const [, priceStr] = appt.service.split('-');
+                        const amount = parseFloat(priceStr);
+                        this.addTransaction({
+                            id: appt.id, // Usamos el mismo ID de cita
+                            type: 'ingreso',
+                            desc: `Venta Servicio: ${appt.service.split('-')[0].trim()} a ${appt.name}`,
+                            amount: amount,
+                            origin: 'Cita/Servicio',
+                            isFacturable: true,
+                            isBilled: false
+                        });
+                    } else {
+                        // Si se desmarca, elimina la transacción asociada (si existe)
+                        this.data.transactions = this.data.transactions.filter(t => t.id !== appt.id || t.origin !== 'Cita/Servicio');
+                    }
+                    this.save();
+                }
+            },
+            
+            deleteAppt: function(id) {
+                // Remove the appointment
+                this.data.appointments = this.data.appointments.filter(a => a.id !== id);
+                // Remove the associated transaction if it was completed and generated one
+                this.data.transactions = this.data.transactions.filter(t => t.id !== id || t.origin !== 'Cita/Servicio');
+                this.save();
+                showNotification("Cita y transacción asociada eliminadas.");
+            },
+            
+            // Lógica renderAppointments (simplificada para el ejemplo)
+            renderAppointments: function() {
+                const tbody = document.getElementById('agendaBody');
+                if (!tbody) return;
+                tbody.innerHTML = '';
+                // Simplificando filtros para mantener el foco en el admin module
+                const filtered = this.data.appointments; 
+
+                filtered.sort((a,b) => (a.date + a.time).localeCompare(b.date + b.time));
+
+                const emptyAgendaEl = document.getElementById('emptyAgenda');
+                if (emptyAgendaEl) emptyAgendaEl.style.display = filtered.length === 0 ? 'block' : 'none';
+
+                filtered.forEach(appt => {
+                    const row = document.createElement('tr');
+                    const [serviceName, price] = appt.service.split('-');
+                    const rowClass = appt.completed ? 'status-completed' : '';
+                    
+                    row.innerHTML = `
+                        <td class="${rowClass}">
+                            <strong>${appt.time}</strong><br>
+                            <small style="color:#888">${appt.date}</small>
+                        </td>
+                        <td class="${rowClass}">${appt.name}</td>
+                        <td class="${rowClass}">
+                            ${serviceName} <span style="font-weight:bold">(${this.formatCurrency(price.trim())})</span>
+                        </td>
+                        <td>
+                            <div style="display:flex; flex-wrap:wrap; gap:5px;">
+                                <button class="btn-sm btn-success" onclick="app.toggleComplete(${appt.id})" title="Marcar como Completado/Pendiente">
+                                    ${appt.completed ? '↩️' : '✅'}
+                                </button>
+                                ${appt.completed ? 
+                                    `<button class="btn-sm btn-info" onclick="app.generateInvoiceFromTransaction(${appt.id})" title="Generar Factura">🧾</button>` 
+                                    : ''}
+                                <button class="btn-sm btn-danger" onclick="app.deleteAppt(${appt.id})" title="Eliminar">🗑️</button>
+                            </div>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            },
+            
+            // 2.4. LÓGICA FLUJO DE CAJA (TRANSACCIONES)
+            addTransaction: function(data) {
+                // Función central para añadir transacciones (manuales, servicios o ventas/compras)
+                const newTrans = {
+                    id: data.id || Date.now(),
+                    type: data.type, // 'ingreso', 'gasto'
+                    desc: data.desc,
+                    amount: data.amount,
+                    origin: data.origin || 'Manual', // Ej: Manual, Cita/Servicio, Venta Producto, Compra Inventario
+                    timestamp: new Date().toISOString(),
+                    isFacturable: data.isFacturable || false,
+                    isBilled: data.isBilled || false
+                };
+                
+                // Si la transacción ya existe (por ID), la actualiza (ej: al desmarcar cita)
+                const existingIndex = this.data.transactions.findIndex(t => t.id === newTrans.id && t.origin === newTrans.origin);
+                if (existingIndex !== -1 && newTrans.origin !== 'Manual') {
+                     // Solo actualiza si ya existe (ej: cita)
+                    this.data.transactions[existingIndex] = newTrans;
+                } else {
+                    // Añade una nueva, incluso si es manual
+                    this.data.transactions.push(newTrans);
+                    if (newTrans.origin === 'Manual') {
+                        this.save();
+                        const financeFormEl = document.getElementById('financeForm');
+                        if (financeFormEl) financeFormEl.reset();
+                    }
+                }
+            },
+
+            // Para registrar transacción manual
+            addTransactionManual: function(e) {
+                e.preventDefault();
+                const finTypeEl = document.getElementById('finType');
+                const finDescEl = document.getElementById('finDesc');
+                const finAmountEl = document.getElementById('finAmount');
+
+                if (!finTypeEl || !finDescEl || !finAmountEl) return;
+                
+                const data = {
+                    type: finTypeEl.value === 'ingreso' ? 'ingreso' : 'gasto',
+                    desc: finDescEl.value,
+                    amount: parseFloat(finAmountEl.value),
+                    origin: 'Manual',
+                    isFacturable: finTypeEl.value === 'ingreso'
+                };
+                this.addTransaction(data);
+                this.save();
+            },
+
+            renderFinance: function() {
+                const tbody = document.getElementById('financeBody');
+                if (!tbody) return;
+                tbody.innerHTML = '';
+                let balance = 0;
+                const sortedTrans = [...this.data.transactions].sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+                const emptyFinanceEl = document.getElementById('emptyFinance');
+                if (emptyFinanceEl) emptyFinanceEl.style.display = sortedTrans.length === 0 ? 'block' : 'none';
+
+                sortedTrans.forEach(t => {
+                    const isIncome = t.type === 'ingreso';
+                    if (isIncome) balance += t.amount;
+                    else balance -= t.amount;
+
+                    const row = document.createElement('tr');
+                    const formattedAmount = this.formatCurrency(t.amount);
+                    const isBilledClass = t.isBilled ? 'background:#fff8e1;' : '';
+                    
+                    row.innerHTML = `
+                        <td style="${isBilledClass}">
+                            <span style="padding:4px 8px; border-radius:4px; background:${isIncome ? '#d4edda' : '#f8d7da'}; color:${isIncome ? '#155724' : '#721c24'}; font-size:0.85rem;">
+                                ${isIncome ? '📈 Ingreso' : '📉 Gasto'}
+                            </span>
+                        </td>
+                        <td style="${isBilledClass}">
+                            ${t.desc}<br>
+                            <small style="color:#999">${new Date(t.timestamp).toLocaleDateString()} ${new Date(t.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</small>
+                        </td>
+                        <td class="${isIncome ? 'text-pos' : 'text-neg'}" style="${isBilledClass}">
+                            ${isIncome ? '+' : '-'}${formattedAmount}
+                        </td>
+                        <td style="${isBilledClass}">
+                            ${t.origin}
+                            ${t.isBilled ? '<br><small style="color:var(--info);">Facturado</small>' : ''}
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+
+                const balDisplay = document.getElementById('balanceDisplay');
+                if (balDisplay) {
+                    const formattedBalance = this.formatCurrency(balance);
+                    balDisplay.textContent = formattedBalance;
+                    balDisplay.className = 'balance-amount ' + (balance >= 0 ? 'text-pos' : 'text-neg');
+                }
+            },
+            
+            // 2.5. LÓGICA CLIENTES (CRM) - AÑADIDA
+            addClient: function(e) {
+                e.preventDefault();
+                const clientIdEl = document.getElementById('clientId');
+                const clientNameEl = document.getElementById('clientName');
+                const clientPhoneEl = document.getElementById('clientPhone');
+                const clientNotesEl = document.getElementById('clientNotes');
+
+                if (!clientIdEl || !clientNameEl || !clientPhoneEl || !clientNotesEl) return;
+
+                const clientId = clientIdEl.value;
+                const clientName = clientNameEl.value;
+                const clientPhone = clientPhoneEl.value;
+                const clientNotes = clientNotesEl.value;
+
+                if (clientId) {
+                    // Edit existing client
+                    const clientIndex = this.data.clients.findIndex(c => c.id === parseInt(clientId));
+                    if (clientIndex !== -1) {
+                        this.data.clients[clientIndex] = {
+                            ...this.data.clients[clientIndex],
+                            name: clientName,
+                            phone: clientPhone,
+                            notes: clientNotes
+                        };
+                        showNotification(`Cliente ${clientName} actualizado.`);
+                    }
+                } else {
+                    // Add new client
+                    const newClient = {
+                        id: Date.now(),
+                        name: clientName,
+                        phone: clientPhone,
+                        notes: clientNotes
+                    };
+                    this.data.clients.push(newClient);
+                    showNotification(`Cliente ${clientName} registrado.`);
+                }
+
+                this.save();
+                this.resetClientForm();
+            },
+
+            resetClientForm: function() {
+                const clientFormEl = document.getElementById('clientForm');
+                const clientIdEl = document.getElementById('clientId');
+                const clientSubmitBtnEl = document.getElementById('clientSubmitBtn');
+                
+                if (clientFormEl) clientFormEl.reset();
+                if (clientIdEl) clientIdEl.value = '';
+                if (clientSubmitBtnEl) clientSubmitBtnEl.textContent = '👥 Guardar Cliente';
+            },
+
+            editClient: function(id) {
+                const client = this.data.clients.find(c => c.id === id);
+                if (client) {
+                    const clientIdEl = document.getElementById('clientId');
+                    const clientNameEl = document.getElementById('clientName');
+                    const clientPhoneEl = document.getElementById('clientPhone');
+                    const clientNotesEl = document.getElementById('clientNotes');
+                    const clientSubmitBtnEl = document.getElementById('clientSubmitBtn');
+
+                    if (clientIdEl) clientIdEl.value = client.id;
+                    if (clientNameEl) clientNameEl.value = client.name;
+                    if (clientPhoneEl) clientPhoneEl.value = client.phone;
+                    if (clientNotesEl) clientNotesEl.value = client.notes;
+                    if (clientSubmitBtnEl) clientSubmitBtnEl.textContent = '💾 Actualizar Cliente';
+                    
+                    this.switchTab('clients'); // Switch to clients tab if not already there
+                    showNotification(`Editando cliente: ${client.name}.`);
+                }
+            },
+
+            deleteClient: function(id) {
+                // En este entorno, no se utiliza confirm() ni alert(). Se procede a la eliminación.
+                this.data.clients = this.data.clients.filter(c => c.id !== id);
+                this.save();
+                showNotification("Cliente eliminado.");
+            },
+
+            renderClients: function() {
+                const tbody = document.getElementById('clientsBody');
+                if (!tbody) return;
+                tbody.innerHTML = '';
+                const searchInput = document.getElementById('clientSearch');
+                const searchTerm = searchInput ? searchInput.value.toLowerCase() : '';
+                
+                const filteredClients = this.data.clients.filter(c => 
+                    c.name.toLowerCase().includes(searchTerm) || c.phone.includes(searchTerm)
+                );
+
+                const emptyClientsEl = document.getElementById('emptyClients');
+                if (emptyClientsEl) emptyClientsEl.style.display = filteredClients.length === 0 ? 'block' : 'none';
+
+                filteredClients.forEach(client => {
+                    const row = document.createElement('tr');
+                    
+                    row.innerHTML = `
+                        <td><strong>${client.name}</strong></td>
+                        <td>${client.phone}</td>
+                        <td>${client.notes.length > 50 ? client.notes.substring(0, 50) + '...' : client.notes}</td>
+                        <td>
+                            <button class="btn-sm btn-info" onclick="app.editClient(${client.id})">✏️ Editar</button>
+                            <button class="btn-sm btn-danger" onclick="app.deleteClient(${client.id})">🗑️ Eliminar</button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            },
+            
+            // 2.6. LÓGICA INVENTARIO & COMPRAS (Módulo Compras)
+            fillInventorySelects: function() {
+                const purchaseSelect = document.getElementById('purchaseProduct');
+                const saleSelect = document.getElementById('saleProduct');
+                
+                if (!purchaseSelect || !saleSelect) return;
+
+                purchaseSelect.innerHTML = '<option value="" disabled selected>Seleccionar producto...</option>';
+                saleSelect.innerHTML = '<option value="" disabled selected>Seleccionar producto...</option>';
+
+                this.data.inventory.forEach(p => {
+                    const option = document.createElement('option');
+                    option.value = p.id;
+                    option.textContent = p.name;
+                    
+                    purchaseSelect.appendChild(option.cloneNode(true));
+                    saleSelect.appendChild(option.cloneNode(true));
+                });
+            },
+            
+            addProduct: function(e) {
+                e.preventDefault();
+                // ... Lógica para añadir nuevo producto
+                const productNameEl = document.getElementById('productName');
+                const productPriceEl = document.getElementById('productPrice');
+                const productAlertEl = document.getElementById('productAlert');
+
+                if (!productNameEl || !productPriceEl || !productAlertEl) return;
+
+                const newProduct = {
+                    id: Date.now(),
+                    name: productNameEl.value,
+                    price: parseFloat(productPriceEl.value),
+                    stock: 0, // Stock inicial siempre 0 al crear
+                    alertLevel: parseInt(productAlertEl.value)
+                };
+                this.data.inventory.push(newProduct);
+                this.save();
+                e.target.reset();
+                productAlertEl.value = 5;
+            },
+
+            // NUEVO: Registrar Compra
+            addPurchase: function(e) {
+                e.preventDefault();
+                const purchaseProductEl = document.getElementById('purchaseProduct');
+                const purchaseQtyEl = document.getElementById('purchaseQty');
+                const purchaseCostEl = document.getElementById('purchaseCost');
+                const purchaseSupplierEl = document.getElementById('purchaseSupplier');
+
+                if (!purchaseProductEl || !purchaseQtyEl || !purchaseCostEl || !purchaseSupplierEl) return;
+
+                const productId = parseInt(purchaseProductEl.value);
+                const qty = parseInt(purchaseQtyEl.value);
+                const cost = parseFloat(purchaseCostEl.value);
+                const supplier = purchaseSupplierEl.value;
+                const totalCost = qty * cost;
+                
+                const product = this.data.inventory.find(p => p.id === productId);
+
+                if (!product) { showNotification("Producto no encontrado."); return; }
+                
+                // 1. Aumentar Stock
+                product.stock += qty;
+                
+                // 2. Registrar Gasto en Flujo de Caja (Compra)
+                this.addTransaction({
+                    id: Date.now(), // Nuevo ID para la transacción de compra
+                    type: 'gasto',
+                    desc: `Compra ${qty}x ${product.name} a ${supplier}`,
+                    amount: totalCost,
+                    origin: 'Compra Inventario'
+                });
+                
+                this.save();
+                showNotification(`Compra registrada. Stock de ${product.name} actualizado a ${product.stock}.`);
+                const purchaseFormEl = document.getElementById('purchaseForm');
+                if (purchaseFormEl) purchaseFormEl.reset();
+            },
+
+            updateStock: function(id, change) {
+                // ... Lógica para +/- stock (se mantiene igual, solo para ajustes manuales)
+                const product = this.data.inventory.find(p => p.id === id);
+                if (product) {
+                    product.stock += change;
+                    if (product.stock < 0) product.stock = 0;
+                    this.save();
+                }
+            },
+            
+            renderInventory: function() {
+                const tbody = document.getElementById('inventoryBody');
+                if (!tbody) return;
+                tbody.innerHTML = '';
+                
+                const emptyInventoryEl = document.getElementById('emptyInventory');
+                if (emptyInventoryEl) emptyInventoryEl.style.display = this.data.inventory.length === 0 ? 'block' : 'none';
+                
+                // Ordenar: Alerta de stock bajo primero
+                const sortedInventory = [...this.data.inventory].sort((a, b) => {
+                    const aLow = a.stock <= a.alertLevel;
+                    const bLow = b.stock <= b.alertLevel;
+                    if (aLow && !bLow) return -1;
+                    if (!aLow && bLow) return 1;
+                    return 0;
+                });
+
+                sortedInventory.forEach(p => {
+                    const row = document.createElement('tr');
+                    const lowStockClass = p.stock <= p.alertLevel ? 'low-stock' : '';
+                    const formattedPrice = this.formatCurrency(p.price);
+                    
+                    row.className = lowStockClass;
+                    row.innerHTML = `
+                        <td><strong>${p.name}</strong></td>
+                        <td>${p.stock}</td>
+                        <td>${formattedPrice}</td>
+                        <td>
+                            <button class="btn-stock btn-success" onclick="app.updateStock(${p.id}, 1)" title="Ajuste Manual +1">+</button>
+                            <button class="btn-stock btn-secondary" onclick="app.updateStock(${p.id}, -1)" title="Ajuste Manual -1">-</button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            },
+            
+            // 2.7. LÓGICA VENTA DE PRODUCTOS (Módulo Ventas)
+            updateSalePrice: function() {
+                const saleProductEl = document.getElementById('saleProduct');
+                const priceDisplayEl = document.getElementById('salePriceDisplay');
+
+                if (!saleProductEl || !priceDisplayEl) return;
+
+                const productId = parseInt(saleProductEl.value);
+                const product = this.data.inventory.find(p => p.id === productId);
+                
+                if (product) {
+                    priceDisplayEl.value = this.formatCurrency(product.price);
+                } else {
+                    priceDisplayEl.value = '';
+                }
+            },
+
+            addSale: function(e) {
+                e.preventDefault();
+                const saleProductEl = document.getElementById('saleProduct');
+                const saleQtyEl = document.getElementById('saleQty');
+                const saleClientEl = document.getElementById('saleClient');
+
+                if (!saleProductEl || !saleQtyEl || !saleClientEl) return;
+                
+                const productId = parseInt(saleProductEl.value);
+                const qty = parseInt(saleQtyEl.value);
+                const clientName = saleClientEl.value || 'Venta General';
+                
+                const product = this.data.inventory.find(p => p.id === productId);
+
+                if (!product) { showNotification("Producto no encontrado."); return; }
+                if (product.stock < qty) { showNotification(`Stock insuficiente. Solo quedan ${product.stock} unidades.`); return; }
+                
+                const saleAmount = product.price * qty;
+
+                // 1. Descontar Stock
+                product.stock -= qty;
+
+                // 2. Registrar Venta en el historial de Ventas de Productos
+                const newSale = {
+                    id: Date.now(),
+                    productId: productId,
+                    productName: product.name,
+                    qty: qty,
+                    amount: saleAmount,
+                    client: clientName,
+                    timestamp: new Date().toISOString()
+                };
+                this.data.productSales.push(newSale);
+
+                // 3. Registrar Ingreso en Flujo de Caja
+                this.addTransaction({
+                    id: newSale.id, // Usamos el ID de la venta
+                    type: 'ingreso',
+                    desc: `Venta Producto: ${qty}x ${product.name} a ${clientName}`,
+                    amount: saleAmount,
+                    origin: 'Venta Producto',
+                    isFacturable: true,
+                    isBilled: false
+                });
+
+                this.save();
+                showNotification(`Venta de ${product.name} registrada. Stock actualizado a ${product.stock}.`);
+                const salesFormEl = document.getElementById('salesForm');
+                if (salesFormEl) salesFormEl.reset();
+            },
+            
+            renderProductSales: function() {
+                const tbody = document.getElementById('productSalesBody');
+                if (!tbody) return;
+                tbody.innerHTML = '';
+
+                let totalRevenue = 0;
+                let totalQty = 0;
+
+                const sortedSales = [...this.data.productSales].sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+                
+                sortedSales.forEach(sale => {
+                    totalRevenue += sale.amount;
+                    totalQty += sale.qty;
+                    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${sale.productName}</td>
+                        <td>${sale.qty}</td>
+                        <td>${this.formatCurrency(sale.amount)}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+                
+                const totalProductsSoldEl = document.getElementById('totalProductsSold');
+                const totalProductRevenueEl = document.getElementById('totalProductRevenue');
+
+                if (totalProductsSoldEl) totalProductsSoldEl.textContent = totalQty;
+                if (totalProductRevenueEl) totalProductRevenueEl.textContent = this.formatCurrency(totalRevenue);
+            },
+            
+            // 2.8. LÓGICA FACTURACIÓN ELECTRÓNICA
+            updateNextInvoiceNumber: function() {
+                const nextNumber = this.data.invoiceCounter.toString().padStart(4, '0');
+                const nextInvoiceNumberEl = document.getElementById('nextInvoiceNumber');
+                if (nextInvoiceNumberEl) nextInvoiceNumberEl.textContent = `FCT-${nextNumber}`;
+
+                // Rellenar select de transacciones pendientes de facturar
+                const select = document.getElementById('transactionToInvoice');
+                if (!select) return;
+                select.innerHTML = '<option value="" disabled selected>Seleccione un ingreso (Cita o Venta)...</option>';
+                
+                const pendingTransactions = this.data.transactions.filter(t => t.type === 'ingreso' && t.isFacturable && !t.isBilled);
+                
+                pendingTransactions.forEach(t => {
+                    const option = document.createElement('option');
+                    option.value = t.id;
+                    option.textContent = `${t.desc} - ${this.formatCurrency(t.amount)}`;
+                    select.appendChild(option);
+                });
+            },
+            
+            // Lógica principal para crear la factura
+            createInvoice: function() {
+                const transactionToInvoiceEl = document.getElementById('transactionToInvoice');
+                if (!transactionToInvoiceEl) return;
+                
+                const transId = parseInt(transactionToInvoiceEl.value);
+                const transaction = this.data.transactions.find(t => t.id === transId);
+
+                if (!transaction || transaction.isBilled) {
+                    showNotification("Seleccione un ingreso pendiente de facturar.");
+                    return;
+                }
+                
+                const invoiceNumber = `FCT-${this.data.invoiceCounter.toString().padStart(4, '0')}`;
+
+                // 1. Generar PDF (Factura)
+                this.generateSequentialInvoicePDF(invoiceNumber, transaction);
+
+                // 2. Actualizar transacción como facturada
+                transaction.isBilled = true;
+                
+                // 3. Registrar factura en historial
+                this.data.invoices.push({
+                    id: transaction.id,
+                    invoiceNumber: invoiceNumber,
+                    description: transaction.desc,
+                    amount: transaction.amount,
+                    timestamp: new Date().toISOString()
+                });
+
+                // 4. Incrementar contador
+                this.data.invoiceCounter++;
+                
+                this.save();
+                showNotification(`Factura ${invoiceNumber} creada y registrada.`);
+            },
+
+            generateInvoiceFromTransaction: function(id) {
+                const transaction = this.data.transactions.find(t => t.id === id && t.type === 'ingreso');
+                if (!transaction) {
+                    showNotification("No se encontró la transacción de ingreso asociada.");
+                    return;
+                }
+                
+                // Si ya está facturada, solo la descarga
+                if (transaction.isBilled) {
+                    const invoice = this.data.invoices.find(i => i.id === id);
+                    if(invoice) this.generateSequentialInvoicePDF(invoice.invoiceNumber, transaction);
+                    return;
+                }
+
+                // Si no está facturada, pasa por el proceso de facturación
+                const invoiceNumber = `FCT-${this.data.invoiceCounter.toString().padStart(4, '0')}`;
+                this.generateSequentialInvoicePDF(invoiceNumber, transaction);
+                
+                transaction.isBilled = true;
+                this.data.invoices.push({
+                    id: transaction.id,
+                    invoiceNumber: invoiceNumber,
+                    description: transaction.desc,
+                    amount: transaction.amount,
+                    timestamp: new Date().toISOString()
+                });
+                this.data.invoiceCounter++;
+                this.save();
+                showNotification(`Factura ${invoiceNumber} generada y marcada como emitida.`);
+            },
+            
+            renderInvoices: function() {
+                const tbody = document.getElementById('invoicesBody');
+                if (!tbody) return;
+                tbody.innerHTML = '';
+                
+                const sortedInvoices = [...this.data.invoices].sort((a,b) => b.invoiceNumber.localeCompare(a.invoiceNumber));
+
+                const emptyInvoicesEl = document.getElementById('emptyInvoices');
+                if (emptyInvoicesEl) emptyInvoicesEl.style.display = sortedInvoices.length === 0 ? 'block' : 'none';
+
+                sortedInvoices.forEach(inv => {
+                    const row = document.createElement('tr');
+                    const formattedAmount = this.formatCurrency(inv.amount);
+                    
+                    row.innerHTML = `
+                        <td><strong style="color:var(--info);">${inv.invoiceNumber}</strong></td>
+                        <td>${inv.description}</td>
+                        <td class="text-pos">${formattedAmount}</td>
+                        <td>
+                            <button class="btn-sm btn-info" onclick="app.generateSequentialInvoicePDF('${inv.invoiceNumber}', app.data.transactions.find(t => t.id === ${inv.id}))">📄 Descargar</button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+                this.updateNextInvoiceNumber();
+            },
+
+            // 2.9. LÓGICA ADMINISTRADOR DEL SISTEMA (NUEVO)
+            updateAdminConfig: function(e) {
+                e.preventDefault();
+                const salonNameEl = document.getElementById('salonName');
+                const taxRateEl = document.getElementById('taxRate');
+
+                if (!salonNameEl || !taxRateEl) return;
+
+                const newName = salonNameEl.value;
+                const newTaxRate = parseFloat(taxRateEl.value);
+
+                this.data.adminConfig.salonName = newName;
+                this.data.adminConfig.taxRate = newTaxRate;
+                
+                this.save();
+                showNotification("Configuración de administrador guardada.");
+            },
+            
+            resetAllData: function() {
+                // Reinicia todos los arrays de datos y el contador
+                this.data.appointments = [];
+                this.data.transactions = [];
+                this.data.clients = [];
+                this.data.inventory = [];
+                this.data.productSales = [];
+                this.data.invoices = [];
+                this.data.invoiceCounter = 1;
+
+                // Restablece la configuración a los valores por defecto
+                this.data.adminConfig = {
+                    salonName: 'Salon Manager Pro',
+                    taxRate: 0 
+                };
+
+                // Limpia localStorage y renderiza todo de nuevo
+                localStorage.clear(); 
+                this.save(); // Llama a save para volver a escribir los defaults
+                this.switchTab('agenda');
+                showNotification("¡Sistema completamente restablecido a valores predeterminados!");
+            },
+            
+            renderAdmin: function() {
+                const salonNameEl = document.getElementById('salonName');
+                const taxRateEl = document.getElementById('taxRate');
+                const appIdDisplayEl = document.getElementById('appIdDisplay');
+                const apptCountEl = document.getElementById('apptCount');
+                const clientCountEl = document.getElementById('clientCount');
+                const transactionCountEl = document.getElementById('transactionCount');
+                
+                if (salonNameEl) salonNameEl.value = this.data.adminConfig.salonName;
+                if (taxRateEl) taxRateEl.value = this.data.adminConfig.taxRate;
+                
+                // Muestra el App ID (simulación de entorno)
+                if (appIdDisplayEl) appIdDisplayEl.textContent = typeof __app_id !== 'undefined' ? __app_id : 'LOCAL_STORAGE';
+
+                // Muestra contadores de datos
+                if (apptCountEl) apptCountEl.textContent = this.data.appointments.length;
+                if (clientCountEl) clientCountEl.textContent = this.data.clients.length;
+                if (transactionCountEl) transactionCountEl.textContent = this.data.transactions.length;
+            },
+
+            // 2.10. UTILIDADES Y FORMATO
+            formatCurrency: function(amount) {
+                return `${parseFloat(amount).toLocaleString('es-ES', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} ${this.CURRENCY}`;
+            },
+
+            // 2.11. EXPORTACIÓN CSV (Simulación Base de Datos Excel)
+            convertToCSV: function(objArray) {
+                const array = typeof objArray != 'object' ? JSON.parse(objArray) : objArray;
+                if (array.length === 0) return '';
+                
+                let str = '';
+                
+                // Encabezados (Keys del primer objeto)
+                const header = Object.keys(array[0]);
+                str += header.join(';') + '\r\n'; // Usar ';' como separador para compatibilidad con Excel
+
+                // Datos
+                for (let i = 0; i < array.length; i++) {
+                    let line = '';
+                    for (let index = 0; index < header.length; index++) {
+                        if (line != '') line += ';';
+                        // Escapar comas y saltos de línea dentro de los datos
+                        const cell = array[i][header[index]] !== null && array[i][header[index]] !== undefined ? array[i][header[index]].toString().replace(/"/g, '""') : '';
+                        line += `"${cell}"`;
+                    }
+                    str += line + '\r\n';
+                }
+
+                return str;
+            },
+
+            exportToCSV: function(dataType) {
+                const dataSet = this.data[dataType];
+                if (dataSet.length === 0) { showNotification(`No hay datos de ${dataType} para exportar.`); return; }
+                
+                const csvContent = this.convertToCSV(dataSet);
+                const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csvContent], { type: 'text/csv;charset=utf-8;' }); // BOM para UTF-8 en Excel
+                const link = document.createElement("a");
+                
+                if (link.download !== undefined) {
+                    const url = URL.createObjectURL(blob);
+                    link.setAttribute("href", url);
+                    link.setAttribute("download", `reporte_${dataType}_${new Date().toISOString().split('T')[0]}.csv`);
+                    link.style.visibility = 'hidden';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    showNotification(`Datos de ${dataType} exportados exitosamente.`);
+                }
+            },
+            
+            // 2.12. GENERACIÓN PDFS (jsPDF y AutoTable) - Factura Electrónica
+            generateSequentialInvoicePDF: function(invoiceNumber, transaction) {
+                if (!transaction) return;
+                
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                const now = new Date();
+                const formattedDate = now.toLocaleDateString('es-ES');
+                
+                const subtotal = transaction.amount;
+                const taxRate = this.data.adminConfig.taxRate / 100;
+                // Calculamos IVA y Total Asumiendo que el monto registrado ya incluye el IVA (modelo de factura más común en minoristas)
+                const taxAmount = subtotal * taxRate / (1 + taxRate);
+                const baseAmount = subtotal - taxAmount;
+                
+                const formattedSubtotal = this.formatCurrency(baseAmount);
+                const formattedTax = this.formatCurrency(taxAmount);
+                const formattedTotal = this.formatCurrency(subtotal);
+                const taxRateDisplay = `${this.data.adminConfig.taxRate}%`;
+
+                doc.setFontSize(22);
+                doc.setTextColor(44, 62, 80);
+                doc.text("FACTURA ELECTRÓNICA", 14, 20);
+
+                doc.setFontSize(10);
+                doc.setTextColor(52, 73, 94);
+                doc.text(this.data.adminConfig.salonName.toUpperCase(), 14, 30);
+                doc.text("Dirección de la Peluquería/Empresa", 14, 35);
+                doc.text("Teléfono: +XXX XXXXXXXX", 14, 40);
+
+                doc.setFontSize(14);
+                doc.setTextColor(0, 0, 0);
+                doc.text(`Factura No.: ${invoiceNumber}`, 150, 20, 'right');
+                doc.text(`Fecha de Emisión: ${formattedDate}`, 150, 28, 'right');
+                doc.text(`Origen: ${transaction.origin}`, 150, 36, 'right');
+                
+                // Tabla de detalles
+                doc.autoTable({
+                    head: [['Descripción del Servicio/Producto', 'Monto (Incluye Impuestos)']],
+                    body: [
+                        [transaction.desc, formattedTotal]
+                    ],
+                    startY: 60,
+                    theme: 'grid',
+                    headStyles: { fillColor: [44, 62, 80], fontSize: 12 },
+                    columnStyles: {
+                        1: { halign: 'right' }
+                    }
+                });
+                
+                const finalY = doc.lastAutoTable.finalY;
+
+                // Totales
+                doc.setFontSize(10);
+                doc.setFont('helvetica', 'normal');
+                doc.text(`Base Imponible (Sin Impuestos): ${formattedSubtotal}`, 150, finalY + 10, 'right');
+                doc.text(`Impuestos (${taxRateDisplay}): ${formattedTax}`, 150, finalY + 15, 'right');
+
+                doc.setFontSize(16);
+                doc.setFont('helvetica', 'bold');
+                doc.text(`TOTAL A PAGAR: ${formattedTotal}`, 150, finalY + 25, 'right');
+                
+                doc.setFontSize(10);
+                doc.setFont('helvetica', 'normal');
+                doc.text("Condiciones de Pago: Pago Inmediato", 14, finalY + 45);
+                doc.text("¡Gracias por su preferencia!", 105, finalY + 65, 'center');
+
+                doc.save(`Factura_${invoiceNumber}.pdf`);
+            },
+            
+            exportAgendaPDF: function() { 
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                const data = this.data.appointments.map(a => [
+                    `${a.date} ${a.time}`,
+                    a.name,
+                    a.service.split('-')[0].trim(),
+                    this.formatCurrency(a.service.split('-')[1].trim()),
+                    a.completed ? 'Sí' : 'No'
+                ]);
+
+                doc.setFontSize(18);
+                doc.text("Reporte de Agenda y Citas", 14, 20);
+
+                doc.autoTable({
+                    head: [['Fecha/Hora', 'Cliente', 'Servicio', 'Monto', 'Completado']],
+                    body: data,
+                    startY: 30,
+                    theme: 'striped',
+                    headStyles: { fillColor: [44, 62, 80] }
+                });
+
+                doc.save('reporte_agenda.pdf');
+            },
+
+            exportFinancePDF: function() {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                const data = this.data.transactions.map(t => [
+                    new Date(t.timestamp).toLocaleDateString(),
+                    t.type === 'ingreso' ? 'Ingreso' : 'Gasto',
+                    t.desc,
+                    t.origin,
+                    (t.type === 'ingreso' ? '+' : '-') + this.formatCurrency(t.amount)
+                ]);
+
+                let balance = 0;
+                this.data.transactions.forEach(t => {
+                    balance += t.type === 'ingreso' ? t.amount : -t.amount;
+                });
+                
+                doc.setFontSize(18);
+                doc.text("Reporte de Flujo de Caja", 14, 20);
+
+                doc.autoTable({
+                    head: [['Fecha', 'Tipo', 'Descripción', 'Origen', 'Monto (F CFA)']],
+                    body: data,
+                    startY: 30,
+                    theme: 'grid',
+                    headStyles: { fillColor: [44, 62, 80] },
+                    columnStyles: {
+                        4: { halign: 'right' }
+                    }
+                });
+
+                const finalY = doc.lastAutoTable.finalY;
+
+                doc.setFontSize(14);
+                doc.text(`BALANCE TOTAL: ${this.formatCurrency(balance)}`, 14, finalY + 20);
+                doc.save('reporte_finanzas.pdf');
+            }
+        };
+
+        // Arrancar la aplicación al cargar el documento
+        document.addEventListener('DOMContentLoaded', () => {
+            // Reemplazamos el listener de transacción manual por el nuevo
+            // NOTA: El form ya llama a app.addTransactionManual(event) en el HTML.
+
+            // Resetear filtros de la agenda
+            const filterDateEl = document.getElementById('filterDate');
+            if (filterDateEl) filterDateEl.value = new Date().toISOString().split('T')[0];
+
+            app.init();
+        });
+
+    </script>
+</body>
+</html>

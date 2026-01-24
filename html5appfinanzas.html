@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EGFinanzas & Chatbot</title>
+
+<!-- Librerías -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/docx@8.1.0/build/index.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<style>
+:root{--color-bg:#f4f6f8;--color-primary:#005b96;--color-accent:#22b573;--color-text:#222;--color-card:#fff;}
+body{margin:0;font-family:"Inter",sans-serif;background:var(--color-bg);color:var(--color-text);}
+.login-container{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;}
+.login-box{background:#fff;padding:30px;border-radius:10px;box-shadow:0 0 10px rgba(0,0,0,0.1);width:300px;text-align:center;}
+.login-box input{width:90%;margin:10px;padding:10px;border:1px solid #ccc;border-radius:6px;}
+.login-box button{width:95%;padding:10px;background:var(--color-primary);color:#fff;border:none;border-radius:6px;cursor:pointer;}
+.login-box button:hover{background:#003d73;}
+.sidebar{background:var(--color-primary);color:#fff;width:230px;padding:20px;position:fixed;top:0;bottom:0;}
+.sidebar h2{text-align:center;}
+.sidebar ul{list-style:none;padding:0;}
+.sidebar li{padding:10px;cursor:pointer;border-radius:6px;}
+.sidebar li:hover,.sidebar li.active{background:rgba(255,255,255,0.2);}
+main{margin-left:250px;padding:20px 40px;}
+section{display:none;}
+section.visible{display:block;}
+.kpi-container{display:flex;gap:15px;flex-wrap:wrap;}
+.kpi{background:var(--color-card);padding:15px;border-radius:10px;flex:1;min-width:150px;box-shadow:0 0 5px rgba(0,0,0,0.1);}
+.kpi p{font-size:22px;color:var(--color-accent);}
+button{background:var(--color-primary);color:white;border:none;border-radius:6px;padding:8px 15px;cursor:pointer;margin:5px;}
+button.all{background:var(--color-accent);}
+footer{text-align:center;background:var(--color-primary);color:white;padding:10px;position:fixed;bottom:0;left:230px;right:0;}
+/* Botón flotante de WhatsApp */
+#whatsappBtn{position:fixed;bottom:20px;right:20px;background:#25D366;border-radius:50%;width:60px;height:60px;
+display:flex;align-items:center;justify-content:center;box-shadow:0 2px 5px rgba(0,0,0,0.3);cursor:pointer;}
+#whatsappBtn img{width:35px;height:35px;}
+@media(max-width:800px){.sidebar{display:none;}footer{left:0;}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen" class="login-container">
+  <div class="login-box">
+    <h2>FinSight Analytics Pro</h2>
+    <p><strong>Acceso Seguro</strong></p>
+    <input type="text" id="loginUser" placeholder="Usuario">
+    <input type="password" id="loginPass" placeholder="Contraseña">
+    <button onclick="login()">Iniciar Sesión</button>
+    <p style="font-size:13px;margin-top:15px;">¿Nuevo usuario? <a href="#" onclick="registrar()">Regístrate</a></p>
+    <p id="loginMsg" style="color:red;font-size:13px;"></p>
+  </div>
+</div>
+
+<!-- APP -->
+<aside id="sidebar" class="sidebar" style="display:none;">
+  <h2>FinSight Pro</h2>
+  <ul id="menuRoles">
+    <li class="active" onclick="mostrarSeccion('dashboard')">🏠 Dashboard</li>
+    <li onclick="mostrarSeccion('analisis')">📊 Análisis</li>
+    <li onclick="mostrarSeccion('informes')">📁 Informes</li>
+    <li onclick="mostrarSeccion('calculadora')">💰 Cálculos</li>
+    <li onclick="mostrarSeccion('exportar')">⬆️ Exportar</li>
+    <li onclick="logout()">🔒 Cerrar sesión</li>
+  </ul>
+</aside>
+
+<main id="appContent" style="display:none;">
+  <section id="dashboard" class="visible">
+    <h1>Panel Financiero</h1>
+    <div class="kpi-container">
+      <div class="kpi"><h3>Ingresos</h3><p>$120,000</p></div>
+      <div class="kpi"><h3>Gastos</h3><p>$78,000</p></div>
+      <div class="kpi"><h3>Beneficio Neto</h3><p>$42,000</p></div>
+      <div class="kpi"><h3>ROI</h3><p>35%</p></div>
+    </div>
+    <canvas id="graficoFinanciero"></canvas>
+  </section>
+
+  <section id="analisis"><h1>Análisis Financiero</h1><div id="resultadoAnalisis">Seleccione filtros para ver resultados.</div></section>
+
+  <section id="informes">
+    <h1>Informes Financieros</h1>
+    <button onclick="generarInformeWord()">📄 Word</button>
+    <button onclick="exportarExcel()">📊 Excel</button>
+    <button class="all" onclick="descargarTodosInformes()">📦 Todos (ZIP)</button>
+    <p id="mensajeInforme"></p>
+  </section>
+
+  <section id="calculadora"><h1>Calculadora Financiera</h1>
+    <input id="ingresosCalc" type="number" value="120000"> 
+    <input id="costosCalc" type="number" value="78000"> 
+    <input id="inversionCalc" type="number" value="50000"> 
+    <button onclick="calcularFinanzas()">Calcular</button> 
+    <div id="resultadosCalc"></div>
+  </section>
+
+  <section id="exportar">
+    <h1>Datos Excel</h1>
+    <input type="file" id="fileInput" accept=".xlsx,.xls" onchange="importarExcel(event)">
+    <table id="tablaDatos"><thead><tr><th>Cuenta</th><th>Valor</th></tr></thead><tbody></tbody></table>
+  </section>
+</main>
+
+<footer>© 2025 FinSight Analytics Pro — Roles & Chatbot</footer>
+
+<!-- BOTÓN DE WHATSAPP -->
+<div id="whatsappBtn" title="Atención al cliente">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp">
+</div>
+
+<script>
+// ==================== AUTENTICACIÓN Y ROLES ====================
+async function sha256(message){
+  const msgBuffer=new TextEncoder().encode(message);
+  const hashBuffer=await crypto.subtle.digest('SHA-256',msgBuffer);
+  return Array.from(new Uint8Array(hashBuffer)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+async function registrar(){
+  const user=prompt("Ingrese nombre de usuario:");
+  const pass=prompt("Ingrese una contraseña segura:");
+  const rol=prompt("Rol (admin / analista / invitado):").toLowerCase();
+  if(!user||!pass||!rol)return alert("Registro cancelado");
+  const users=JSON.parse(localStorage.getItem("usuarios")||"{}");
+  if(users[user])return alert("Usuario ya existe");
+  users[user]={hash:await sha256(pass),rol:rol};
+  localStorage.setItem("usuarios",JSON.stringify(users));
+  alert("Usuario registrado correctamente. Inicie sesión.");
+}
+
+async function login(){
+  const user=document.getElementById("loginUser").value.trim();
+  const pass=document.getElementById("loginPass").value;
+  const users=JSON.parse(localStorage.getItem("usuarios")||"{}");
+  if(!users[user])return document.getElementById("loginMsg").textContent="Usuario no encontrado.";
+  const hash=await sha256(pass);
+  if(users[user].hash!==hash)return document.getElementById("loginMsg").textContent="Contraseña incorrecta.";
+  localStorage.setItem("sesionUsuario",JSON.stringify({nombre:user,rol:users[user].rol}));
+  iniciarSesion();
+}
+
+function iniciarSesion(){
+  document.getElementById("loginScreen").style.display="none";
+  document.getElementById("sidebar").style.display="block";
+  document.getElementById("appContent").style.display="block";
+  const user=JSON.parse(localStorage.getItem("sesionUsuario"));
+  aplicarPermisos(user.rol);
+}
+
+function logout(){localStorage.removeItem("sesionUsuario");location.reload();}
+if(localStorage.getItem("sesionUsuario"))iniciarSesion();
+
+function aplicarPermisos(rol){
+  const admin=['dashboard','analisis','informes','calculadora','exportar'];
+  const analista=['dashboard','analisis','calculadora'];
+  const invitado=['dashboard'];
+  let permisos=[];
+  if(rol==='admin')permisos=admin;
+  else if(rol==='analista')permisos=analista;
+  else permisos=invitado;
+  document.querySelectorAll('section').forEach(sec=>{
+    if(permisos.includes(sec.id))sec.style.display='block';else sec.style.display='none';
+  });
+}
+
+// ==================== FUNCIONALIDAD APP ====================
+function mostrarSeccion(id){
+  document.querySelectorAll("section").forEach(s=>s.classList.remove("visible"));
+  document.getElementById(id).classList.add("visible");
+  document.querySelectorAll(".sidebar li").forEach(li=>li.classList.remove("active"));
+  event.target.classList.add("active");
+}
+
+let datos=[{Cuenta:"Ventas",Valor:120000},{Cuenta:"Costos",Valor:78000},{Cuenta:"Utilidad",Valor:42000}];
+const ctx=document.getElementById("graficoFinanciero");
+new Chart(ctx,{type:"bar",data:{labels:["Ene","Feb","Mar","Abr","May","Jun"],
+datasets:[{label:"Ingresos",data:[15000,18000,22000,25000,26000,24000],backgroundColor:"#22b573"},
+{label:"Gastos",data:[10000,12000,16000,15000,17000,14000],backgroundColor:"#ce1126"}]},
+options:{responsive:true,plugins:{legend:{position:"bottom"}}}});
+
+function actualizarTabla(){
+  const tbody=document.querySelector("#tablaDatos tbody");
+  tbody.innerHTML="";
+  datos.forEach(d=>tbody.innerHTML+=`<tr><td>${d.Cuenta}</td><td>${d.Valor}</td></tr>`);
+} actualizarTabla();
+
+function importarExcel(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    const wb=XLSX.read(ev.target.result,{type:"binary"});
+    const ws=wb.Sheets[wb.SheetNames[0]];
+    datos=XLSX.utils.sheet_to_json(ws);
+    actualizarTabla();alert("Datos importados correctamente");
+  }; reader.readAsBinaryString(file);
+}
+
+function exportarExcel(){
+  const wb=XLSX.utils.book_new();
+  const ws=XLSX.utils.json_to_sheet(datos);
+  XLSX.utils.book_append_sheet(wb,ws,"Datos");
+  XLSX.writeFile(wb,"Informe_FinSight.xlsx");
+  document.getElementById("mensajeInforme").textContent="Excel generado.";
+}
+
+async function generarInformeWord(){
+  const {Document,Packer,Paragraph}=window.docx;
+  const fecha=new Date().toLocaleDateString();
+  const doc=new Document({sections:[{children:[
+    new Paragraph({text:"Informe Financiero - FinSight Analytics",heading:"Title"}),
+    new Paragraph({text:`Fecha: ${fecha}`,spacing:{after:200}}),
+    ...datos.map(d=>new Paragraph(`${d.Cuenta}: ${d.Valor} USD`))
+  ]}]});
+  const blob=await Packer.toBlob(doc);
+  saveAs(blob,"Informe_FinSight.docx");
+  document.getElementById("mensajeInforme").textContent="Word generado.";
+}
+
+function calcularFinanzas(){
+  const ingresos=parseFloat(document.getElementById("ingresosCalc").value);
+  const costos=parseFloat(document.getElementById("costosCalc").value);
+  const inversion=parseFloat(document.getElementById("inversionCalc").value);
+  const beneficio=ingresos-costos;
+  const roi=((beneficio/inversion)*100).toFixed(2);
+  document.getElementById("resultadosCalc").innerHTML=`Beneficio: $${beneficio}<br>ROI: ${roi}%`;
+}
+
+async function descargarTodosInformes(){
+  const zip=new JSZip();const {Document,Packer,Paragraph}=window.docx;
+  const fecha=new Date().toLocaleDateString();
+  const doc=new Document({sections:[{children:[new Paragraph({text:"Informe Consolidado FinSight",heading:"Title"}),new Paragraph({text:`Fecha: ${fecha}`}),...datos.map(d=>new Paragraph(`${d.Cuenta}: ${d.Valor} USD`))]}]});
+  const wordBlob=await Packer.toBlob(doc);zip.file("Informe_FinSight.docx",wordBlob);
+  const wb=XLSX.utils.book_new();const ws=XLSX.utils.json_to_sheet(datos);XLSX.utils.book_append_sheet(wb,ws,"Datos");
+  const excelBlob=new Blob([XLSX.write(wb,{bookType:"xlsx",type:"array"})]);zip.file("Datos_FinSight.xlsx",excelBlob);
+  const dashboard=document.getElementById("dashboard");const canvas=await html2canvas(dashboard);
+  const imgData=canvas.toDataURL("image/png");const {jsPDF}=window.jspdf;const pdf=new jsPDF();pdf.addImage(imgData,"PNG",0,0,210,150);
+  const pdfBlob=pdf.output("blob");zip.file("Dashboard_FinSight.pdf",pdfBlob);
+  zip.generateAsync({type:"blob"}).then(content=>saveAs(content,"Informes_FinSight.zip"));
+  document.getElementById("mensajeInforme").textContent="Descargando todos los informes...";
+}
+
+// ==================== CHATBOT DE WHATSAPP ====================
+document.getElementById("whatsappBtn").addEventListener("click",()=>{
+  const user=JSON.parse(localStorage.getItem("sesionUsuario")||"{}");
+  const nombre=user?.nombre||"Invitado";
+  const mensaje=encodeURIComponent(`Hola, soy ${nombre} desde FinSight Analytics. Necesito ayuda con el sistema.`);
+  window.open(`https://wa.me/+240222916717?text=${mensaje}`,"_blank");
+});
+</script>
+</body>
+</html>
