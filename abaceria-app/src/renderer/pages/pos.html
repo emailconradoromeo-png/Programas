@@ -1,0 +1,40 @@
+<div id="pos-alerts"></div>
+
+<div class="pos-layout">
+  <!-- Panel Izquierdo: Busqueda de Productos -->
+  <div class="pos-products">
+    <div class="toolbar">
+      <input type="text" class="form-control search-input" id="pos-search" data-i18n-placeholder="pos.searchPlaceholder" placeholder="Buscar producto por nombre o codigo...">
+    </div>
+    <div class="pos-products-list" id="pos-products-list">
+      <div class="empty-state" data-i18n="pos.searchHint">Busca un producto para agregarlo al carrito</div>
+    </div>
+  </div>
+
+  <!-- Panel Derecho: Carrito -->
+  <div class="pos-cart">
+    <div class="pos-cart-header"><span data-i18n="pos.cartTitle">Carrito de Venta</span> <span class="pos-cart-count" id="pos-cart-count">0</span></div>
+    <div class="pos-cart-items" id="pos-cart-items">
+      <div class="empty-state" data-i18n="pos.cartEmpty">El carrito esta vacio</div>
+    </div>
+    <div class="pos-cart-footer">
+      <div class="pos-cart-total">
+        <span data-i18n="pos.total">TOTAL:</span>
+        <span class="amount" id="pos-total">0 FCFA</span>
+      </div>
+      <button class="btn btn-success btn-cobrar" onclick="processSale()" data-i18n="pos.charge">COBRAR</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm dialog -->
+<div class="confirm-overlay" id="pos-confirm">
+  <div class="confirm-box">
+    <h3 data-i18n="pos.confirmTitle">Confirmar Venta</h3>
+    <p id="pos-confirm-msg" data-i18n="pos.confirmMsg">Desea procesar esta venta?</p>
+    <div class="confirm-actions">
+      <button class="btn btn-secondary" onclick="closeConfirm()" data-i18n="btn.cancel">Cancelar</button>
+      <button class="btn btn-success" onclick="confirmSale()" data-i18n="btn.confirm">Confirmar</button>
+    </div>
+  </div>
+</div>

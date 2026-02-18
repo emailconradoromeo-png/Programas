@@ -38,6 +38,12 @@ async function loadReports() {
 
   const query = `?from=${from}&to=${to}`;
 
+  // Show loading in summary cards and tables
+  document.querySelectorAll('#report-summary .card-value').forEach(el => { el.textContent = '...'; });
+  document.getElementById('rpt-by-day').innerHTML = `<tr><td colspan="3"><div class="loading-spinner"></div></td></tr>`;
+  document.getElementById('rpt-top-products').innerHTML = `<tr><td colspan="5"><div class="loading-spinner"></div></td></tr>`;
+  document.getElementById('rpt-by-category').innerHTML = `<tr><td colspan="3"><div class="loading-spinner"></div></td></tr>`;
+
   try {
     const [summary, byDay, topProducts, byCategory, returns] = await Promise.all([
       api.get(`/reports/summary${query}`),

@@ -1,4 +1,10 @@
 (async function initDashboard() {
+  // Show loading in cards
+  const cardsContainer = document.getElementById('dashboard-cards');
+  cardsContainer.querySelectorAll('.card-value').forEach(el => {
+    el.textContent = '...';
+  });
+
   try {
     const today = todayISO();
     const [summary, sales, returns] = await Promise.all([
@@ -17,6 +23,12 @@
     const totalRefunds = returns.reduce((sum, r) => sum + parseFloat(r.total), 0);
     document.getElementById('card-devoluciones-hoy').textContent = totalReturns;
     document.getElementById('card-reembolsos-hoy').textContent = formatCurrency(totalRefunds);
+
+    // Animate cards
+    cardsContainer.querySelectorAll('.card').forEach((card, i) => {
+      card.classList.add('card-animate');
+      card.style.animationDelay = `${i * 0.08}s`;
+    });
 
     const tbody = document.getElementById('dashboard-last-sales');
     const recent = sales.slice(0, 5);

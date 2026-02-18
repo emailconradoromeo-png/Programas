@@ -25,6 +25,9 @@ async function searchSaleForReturn() {
     return;
   }
 
+  const detailContainer = document.getElementById('return-sale-detail');
+  showLoading(detailContainer);
+
   try {
     const [sale, saleReturns] = await Promise.all([
       api.get(`/sales/${saleId}`),
@@ -43,7 +46,7 @@ async function searchSaleForReturn() {
 
     renderSaleForReturn(sale);
   } catch (err) {
-    document.getElementById('return-sale-detail').innerHTML =
+    detailContainer.innerHTML =
       `<div class="alert alert-danger">${t('returns.saleNotFound')}</div>`;
   }
 }
@@ -167,6 +170,9 @@ async function confirmReturn() {
 
   const motivo = document.getElementById('return-motivo') ? document.getElementById('return-motivo').value : '';
 
+  const btn = document.querySelector('#return-confirm-modal .modal-footer .btn-primary');
+  setButtonLoading(btn, true);
+
   try {
     await api.post('/returns', {
       sale_id: returnSaleData.id,
@@ -183,6 +189,8 @@ async function confirmReturn() {
   } catch (err) {
     closeReturnModal();
     showAlert(document.getElementById('returns-alerts'), err.message);
+  } finally {
+    setButtonLoading(btn, false);
   }
 }
 
@@ -197,10 +205,14 @@ async function loadReturns() {
   if (from) query += `?from=${from}`;
   if (to) query += `${query ? '&' : '?'}to=${to}`;
 
+  const container = document.getElementById('returns-list');
+  showLoading(container);
+
   try {
     const returns = await api.get(`/returns${query}`);
     renderReturnsList(returns);
   } catch (err) {
+    container.innerHTML = '';
     console.error('Error loading returns:', err);
   }
 }

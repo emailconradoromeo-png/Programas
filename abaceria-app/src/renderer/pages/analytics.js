@@ -78,6 +78,10 @@ async function loadVelocity() {
   const from = document.getElementById('vel-from').value;
   const to = document.getElementById('vel-to').value;
 
+  // Show loading spinners
+  document.getElementById('velocity-tbody').innerHTML = `<tr><td colspan="9"><div class="loading-spinner"></div></td></tr>`;
+  document.getElementById('category-perf-tbody').innerHTML = `<tr><td colspan="7"><div class="loading-spinner"></div></td></tr>`;
+
   try {
     const [products, categories] = await Promise.all([
       api.get(`/analytics/product-velocity?from=${from}&to=${to}`),
@@ -127,9 +131,11 @@ async function loadVelocity() {
 }
 
 async function loadRestock() {
+  const tbody = document.getElementById('restock-tbody');
+  tbody.innerHTML = `<tr><td colspan="8"><div class="loading-spinner"></div></td></tr>`;
+
   try {
     const data = await api.get('/analytics/restock');
-    const tbody = document.getElementById('restock-tbody');
     if (data.length === 0) {
       tbody.innerHTML = `<tr><td colspan="8" class="empty-state">${t('analytics.noRestockNeeded')}</td></tr>`;
     } else {
@@ -153,9 +159,11 @@ async function loadRestock() {
 
 async function loadDeadStock() {
   const days = document.getElementById('dead-days').value || 30;
+  const tbody = document.getElementById('dead-tbody');
+  tbody.innerHTML = `<tr><td colspan="8"><div class="loading-spinner"></div></td></tr>`;
+
   try {
     const data = await api.get(`/analytics/dead-stock?days=${days}`);
-    const tbody = document.getElementById('dead-tbody');
     const totalFrozen = data.reduce((sum, d) => sum + d.valor_inmovilizado, 0);
     document.getElementById('dead-total-label').textContent =
       `${t('analytics.totalFrozenCapital')}: ${formatCurrency(totalFrozen)}`;
@@ -183,9 +191,11 @@ async function loadDeadStock() {
 
 async function loadAnomalies() {
   const days = document.getElementById('anomaly-days').value || 7;
+  const tbody = document.getElementById('anomalies-tbody');
+  tbody.innerHTML = `<tr><td colspan="6"><div class="loading-spinner"></div></td></tr>`;
+
   try {
     const data = await api.get(`/analytics/anomalies?days=${days}`);
-    const tbody = document.getElementById('anomalies-tbody');
     if (data.length === 0) {
       tbody.innerHTML = `<tr><td colspan="6" class="empty-state">${t('analytics.noAnomalies')}</td></tr>`;
     } else {

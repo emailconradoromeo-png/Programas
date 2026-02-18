@@ -20,6 +20,9 @@ async function loadInventorySummary() {
 }
 
 async function loadInventoryStatus() {
+  const tbody = document.getElementById('inv-stock-body');
+  tbody.innerHTML = `<tr><td colspan="6"><div class="loading-spinner"></div></td></tr>`;
+
   try {
     const search = document.getElementById('inv-search').value;
     const stockFilter = document.getElementById('inv-stock-filter').value;
@@ -27,20 +30,19 @@ async function loadInventoryStatus() {
     if (search) url += `search=${encodeURIComponent(search)}&`;
     if (stockFilter) url += `stock_filter=${stockFilter}&`;
     const products = await api.get(url);
-    const tbody = document.getElementById('inv-stock-body');
     if (products.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No se encontraron productos</td></tr>';
+      tbody.innerHTML = `<tr><td colspan="6" class="empty-state">${t('inventory.noProducts')}</td></tr>`;
       return;
     }
     tbody.innerHTML = products.map(p => {
       let stockClass = 'stock-ok';
-      let estadoBadge = '<span class="badge badge-success">Normal</span>';
+      let estadoBadge = `<span class="badge badge-success">${t('inventory.normal')}</span>`;
       if (p.stock === 0) {
         stockClass = 'stock-zero';
-        estadoBadge = '<span class="badge badge-danger">Sin stock</span>';
+        estadoBadge = `<span class="badge badge-danger">${t('inventory.noStock')}</span>`;
       } else if (p.stock <= 5) {
         stockClass = 'stock-low';
-        estadoBadge = '<span class="badge badge-warning">Bajo</span>';
+        estadoBadge = `<span class="badge badge-warning">${t('inventory.low')}</span>`;
       }
       return `<tr>
         <td>${p.codigo || '-'}</td>
@@ -52,11 +54,15 @@ async function loadInventoryStatus() {
       </tr>`;
     }).join('');
   } catch (err) {
+    tbody.innerHTML = '';
     console.error('Error loading inventory status:', err);
   }
 }
 
 async function loadMovements() {
+  const tbody = document.getElementById('inv-movements-body');
+  tbody.innerHTML = `<tr><td colspan="7"><div class="loading-spinner"></div></td></tr>`;
+
   try {
     const from = document.getElementById('mov-from').value;
     const to = document.getElementById('mov-to').value;
@@ -66,9 +72,8 @@ async function loadMovements() {
     if (to) url += `to=${to}&`;
     if (tipo) url += `tipo=${tipo}&`;
     const movements = await api.get(url);
-    const tbody = document.getElementById('inv-movements-body');
     if (movements.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No hay movimientos en este período</td></tr>';
+      tbody.innerHTML = `<tr><td colspan="7" class="empty-state">${t('inventory.noMovements')}</td></tr>`;
       return;
     }
     tbody.innerHTML = movements.map(m => {
@@ -86,6 +91,7 @@ async function loadMovements() {
       </tr>`;
     }).join('');
   } catch (err) {
+    tbody.innerHTML = '';
     console.error('Error loading movements:', err);
   }
 }
@@ -108,11 +114,12 @@ function switchInvTab(tab) {
 
 function populateProductSelect(selectId) {
   const select = document.getElementById(selectId);
-  select.innerHTML = '<option value="">-- Seleccionar producto --</option>' +
-    invProducts.map(p => `<option value="${p.id}" data-stock="${p.stock}">${p.nombre} (Stock: ${p.stock})</option>`).join('');
+  select.innerHTML = `<option value="">${t('inventory.selectProduct')}</option>` +
+    invProducts.map(p => `<option value="${p.id}" data-stock="${p.stock}">${p.nombre} (${t('pos.stock')}: ${p.stock})</option>`).join('');
 }
 
 function openEntryModal() {
+  clearValidation(document.getElementById('entry-modal'));
   populateProductSelect('entry-product');
   document.getElementById('entry-cantidad').value = 1;
   document.getElementById('entry-nota').value = '';
@@ -125,30 +132,35 @@ function closeEntryModal() {
 }
 
 async function submitEntry() {
-  const product_id = document.getElementById('entry-product').value;
-  const cantidad = parseInt(document.getElementById('entry-cantidad').value);
+  const productSelect = document.getElementById('entry-product');
+  const cantidadInput = document.getElementById('entry-cantidad');
+  const product_id = productSelect.value;
+  const cantidad = parseInt(cantidadInput.value);
   const nota = document.getElementById('entry-nota').value;
 
-  if (!product_id) {
-    showAlert(document.getElementById('entry-alert'), 'Seleccione un producto');
-    return;
-  }
-  if (!cantidad || cantidad <= 0) {
-    showAlert(document.getElementById('entry-alert'), 'La cantidad debe ser mayor a 0');
-    return;
-  }
+  // Validation
+  let valid = true;
+  valid = validateField(productSelect, product_id, t('inventory.selectRequired')) && valid;
+  valid = validateField(cantidadInput, cantidad && cantidad > 0, t('inventory.qtyRequired')) && valid;
+  if (!valid) return;
+
+  const btn = document.querySelector('#entry-modal .modal-footer .btn-success');
+  setButtonLoading(btn, true);
 
   try {
     await api.post('/inventory/entry', { product_id: parseInt(product_id), cantidad, nota });
     closeEntryModal();
     await Promise.all([loadInventorySummary(), loadInventoryStatus(), loadAllProducts()]);
-    showAlert(document.getElementById('content-body'), 'Entrada registrada exitosamente', 'success');
+    showAlert(document.getElementById('content-body'), t('inventory.entrySuccess'), 'success');
   } catch (err) {
-    showAlert(document.getElementById('entry-alert'), err.message || 'Error al registrar entrada');
+    showAlert(document.getElementById('entry-alert'), err.message);
+  } finally {
+    setButtonLoading(btn, false);
   }
 }
 
 function openAdjustmentModal() {
+  clearValidation(document.getElementById('adjustment-modal'));
   populateProductSelect('adj-product');
   document.getElementById('adj-stock-actual').value = '';
   document.getElementById('adj-stock-real').value = 0;
@@ -169,26 +181,30 @@ function showCurrentStock() {
 }
 
 async function submitAdjustment() {
-  const product_id = document.getElementById('adj-product').value;
-  const stock_real = parseInt(document.getElementById('adj-stock-real').value);
+  const productSelect = document.getElementById('adj-product');
+  const stockRealInput = document.getElementById('adj-stock-real');
+  const product_id = productSelect.value;
+  const stock_real = parseInt(stockRealInput.value);
   const nota = document.getElementById('adj-nota').value;
 
-  if (!product_id) {
-    showAlert(document.getElementById('adjustment-alert'), 'Seleccione un producto');
-    return;
-  }
-  if (isNaN(stock_real) || stock_real < 0) {
-    showAlert(document.getElementById('adjustment-alert'), 'El stock real debe ser un número no negativo');
-    return;
-  }
+  // Validation
+  let valid = true;
+  valid = validateField(productSelect, product_id, t('inventory.selectRequired')) && valid;
+  valid = validateField(stockRealInput, !isNaN(stock_real) && stock_real >= 0, t('inventory.realStockRequired')) && valid;
+  if (!valid) return;
+
+  const btn = document.querySelector('#adjustment-modal .modal-footer .btn-primary');
+  setButtonLoading(btn, true);
 
   try {
     await api.post('/inventory/adjustment', { product_id: parseInt(product_id), stock_real, nota });
     closeAdjustmentModal();
     await Promise.all([loadInventorySummary(), loadInventoryStatus(), loadAllProducts()]);
-    showAlert(document.getElementById('content-body'), 'Ajuste aplicado exitosamente', 'success');
+    showAlert(document.getElementById('content-body'), t('inventory.adjustmentSuccess'), 'success');
   } catch (err) {
-    showAlert(document.getElementById('adjustment-alert'), err.message || 'Error al aplicar ajuste');
+    showAlert(document.getElementById('adjustment-alert'), err.message);
+  } finally {
+    setButtonLoading(btn, false);
   }
 }
 

@@ -96,11 +96,11 @@
     <div class="modal-body">
       <div id="entry-alert"></div>
       <div class="form-group">
-        <label data-i18n="label.product">Producto</label>
+        <label data-i18n="label.product">Producto <span class="required">*</span></label>
         <select class="form-control" id="entry-product"></select>
       </div>
       <div class="form-group">
-        <label data-i18n="inventory.qty">Cantidad</label>
+        <label data-i18n="inventory.qty">Cantidad <span class="required">*</span></label>
         <input type="number" class="form-control" id="entry-cantidad" min="1" value="1">
       </div>
       <div class="form-group">
@@ -125,7 +125,7 @@
     <div class="modal-body">
       <div id="adjustment-alert"></div>
       <div class="form-group">
-        <label data-i18n="label.product">Producto</label>
+        <label data-i18n="label.product">Producto <span class="required">*</span></label>
         <select class="form-control" id="adj-product" onchange="showCurrentStock()"></select>
       </div>
       <div class="form-group">
@@ -133,7 +133,7 @@
         <input type="text" class="form-control" id="adj-stock-actual" readonly disabled>
       </div>
       <div class="form-group">
-        <label data-i18n="inventory.realStock">Stock Real (conteo fisico)</label>
+        <label data-i18n="inventory.realStock">Stock Real (conteo fisico) <span class="required">*</span></label>
         <input type="number" class="form-control" id="adj-stock-real" min="0" value="0">
       </div>
       <div class="form-group">

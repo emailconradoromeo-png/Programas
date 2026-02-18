@@ -4,6 +4,9 @@ async function initDailySales() {
 }
 
 async function loadDailySales() {
+  const salesList = document.getElementById('ds-sales-list');
+  showLoading(salesList);
+
   try {
     const date = document.getElementById('ds-date').value;
     const [data, returns] = await Promise.all([
@@ -20,6 +23,7 @@ async function loadDailySales() {
 
     renderSalesList(data.ventas);
   } catch (err) {
+    salesList.innerHTML = '';
     console.error('Error loading daily sales:', err);
   }
 }
@@ -104,12 +108,15 @@ async function showCierre() {
   document.querySelectorAll('.tabs .tab-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.tabs .tab-btn')[1].classList.add('active');
 
+  const container = document.getElementById('ds-cierre-content');
+  showLoading(container);
+
   try {
     const date = document.getElementById('ds-date').value;
     const data = await api.get(`/daily-sales/cierre?date=${date}`);
     renderCierre(data);
   } catch (err) {
-    document.getElementById('ds-cierre-content').innerHTML =
+    container.innerHTML =
       `<div class="alert alert-danger">${t('dailySales.errorCierre')}: ${err.message}</div>`;
   }
 }
