@@ -1,0 +1,163 @@
+<!-- Alert Cards -->
+<div class="cards-grid" id="analytics-alerts">
+  <div class="card">
+    <div class="card-label" data-i18n="analytics.outOfStock">Sin Stock</div>
+    <div class="card-value danger" id="alert-out-of-stock">-</div>
+  </div>
+  <div class="card">
+    <div class="card-label" data-i18n="analytics.criticalRestock">Restock Critico</div>
+    <div class="card-value danger" id="alert-critical">-</div>
+  </div>
+  <div class="card">
+    <div class="card-label" data-i18n="analytics.warningRestock">Restock Alerta</div>
+    <div class="card-value warning" id="alert-warning">-</div>
+  </div>
+  <div class="card">
+    <div class="card-label" data-i18n="analytics.notSelling">Sin Ventas 30d</div>
+    <div class="card-value warning" id="alert-not-selling">-</div>
+  </div>
+</div>
+
+<!-- Tabs -->
+<div class="tabs" id="analytics-tabs">
+  <button class="tab-btn active" data-tab="tab-velocity" data-i18n="analytics.tabAnalysis">Analisis Productos</button>
+  <button class="tab-btn" data-tab="tab-restock" data-i18n="analytics.tabRestock">Recomendaciones</button>
+  <button class="tab-btn" data-tab="tab-dead" data-i18n="analytics.tabDeadStock">Stock Muerto</button>
+  <button class="tab-btn" data-tab="tab-anomalies" data-i18n="analytics.tabAnomalies">Anomalias</button>
+</div>
+
+<!-- Tab 1: Product Velocity -->
+<div class="tab-content active" id="tab-velocity">
+  <div class="report-filters">
+    <label data-i18n="reports.from">Desde:</label>
+    <input type="date" id="vel-from" class="form-control" style="width:auto">
+    <label data-i18n="reports.to">Hasta:</label>
+    <input type="date" id="vel-to" class="form-control" style="width:auto">
+    <div class="preset-btns">
+      <button class="btn btn-secondary btn-sm" onclick="setVelPreset(7)">7d</button>
+      <button class="btn btn-secondary btn-sm" onclick="setVelPreset(30)">30d</button>
+      <button class="btn btn-secondary btn-sm" onclick="setVelPreset(90)">90d</button>
+    </div>
+    <button class="btn btn-primary btn-sm" onclick="loadVelocity()" data-i18n="btn.filter">Filtrar</button>
+  </div>
+
+  <div class="report-section">
+    <h3 data-i18n="analytics.productVelocity">Velocidad de Productos</h3>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th data-i18n="table.id">#</th>
+            <th data-i18n="table.product">Producto</th>
+            <th data-i18n="table.code">Codigo</th>
+            <th data-i18n="table.category">Categoria</th>
+            <th data-i18n="table.sold">Vendidos</th>
+            <th data-i18n="table.income">Ingresos</th>
+            <th>%</th>
+            <th data-i18n="analytics.dailyVelocity">Vel. Diaria</th>
+            <th data-i18n="analytics.trend">Tendencia</th>
+          </tr>
+        </thead>
+        <tbody id="velocity-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="report-section">
+    <h3 data-i18n="analytics.categoryPerformance">Rendimiento por Categoria</h3>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th data-i18n="table.category">Categoria</th>
+            <th data-i18n="table.products">Productos</th>
+            <th data-i18n="table.sold">Vendidos</th>
+            <th data-i18n="table.income">Ingresos</th>
+            <th>%</th>
+            <th data-i18n="analytics.avgVelocity">Vel. Prom.</th>
+            <th data-i18n="analytics.trend">Tendencia</th>
+          </tr>
+        </thead>
+        <tbody id="category-perf-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Tab 2: Restock Recommendations -->
+<div class="tab-content" id="tab-restock">
+  <div class="priority-legend">
+    <span class="badge badge-danger" data-i18n="analytics.critical">Critico</span> <small data-i18n="analytics.criticalDesc">&lt;3 dias</small>
+    <span class="badge badge-warning" style="margin-left:12px" data-i18n="analytics.warning">Alerta</span> <small data-i18n="analytics.warningDesc">&lt;7 dias</small>
+    <span class="badge badge-info" style="margin-left:12px" data-i18n="analytics.watch">Vigilar</span> <small data-i18n="analytics.watchDesc">&lt;14 dias</small>
+  </div>
+  <div class="table-container" style="margin-top:16px">
+    <table>
+      <thead>
+        <tr>
+          <th data-i18n="analytics.priority">Prioridad</th>
+          <th data-i18n="table.product">Producto</th>
+          <th data-i18n="table.code">Codigo</th>
+          <th data-i18n="table.stock">Stock</th>
+          <th data-i18n="analytics.dailyVelocity">Vel. Diaria</th>
+          <th data-i18n="analytics.daysToDeplete">Dias p/Agotarse</th>
+          <th data-i18n="analytics.suggestedQty">Cant. Sugerida</th>
+          <th data-i18n="analytics.lastEntry">Ult. Entrada</th>
+        </tr>
+      </thead>
+      <tbody id="restock-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Tab 3: Dead Stock -->
+<div class="tab-content" id="tab-dead">
+  <div class="report-filters">
+    <label data-i18n="analytics.daysWithoutSales">Dias sin ventas:</label>
+    <input type="number" id="dead-days" class="form-control" value="30" min="1" style="width:80px">
+    <button class="btn btn-primary btn-sm" onclick="loadDeadStock()" data-i18n="btn.filter">Filtrar</button>
+    <span style="margin-left:auto;font-weight:700" id="dead-total-label"></span>
+  </div>
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th data-i18n="table.product">Producto</th>
+          <th data-i18n="table.code">Codigo</th>
+          <th data-i18n="table.category">Categoria</th>
+          <th data-i18n="table.stock">Stock</th>
+          <th data-i18n="table.price">Precio</th>
+          <th data-i18n="analytics.frozenCapital">Capital Inmov.</th>
+          <th data-i18n="analytics.lastSale">Ult. Venta</th>
+          <th data-i18n="analytics.daysSinceLastSale">Dias sin Venta</th>
+        </tr>
+      </thead>
+      <tbody id="dead-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Tab 4: Anomalies -->
+<div class="tab-content" id="tab-anomalies">
+  <div class="report-filters">
+    <label data-i18n="analytics.analyzeDays">Analizar ultimos:</label>
+    <input type="number" id="anomaly-days" class="form-control" value="7" min="1" style="width:80px">
+    <span data-i18n="analytics.days">dias</span>
+    <button class="btn btn-primary btn-sm" onclick="loadAnomalies()" data-i18n="btn.filter">Filtrar</button>
+  </div>
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th data-i18n="table.date">Fecha</th>
+          <th data-i18n="table.product">Producto</th>
+          <th data-i18n="table.type">Tipo</th>
+          <th data-i18n="table.sold">Vendido</th>
+          <th data-i18n="analytics.dailyAvg">Promedio</th>
+          <th data-i18n="analytics.deviation">Desviacion</th>
+        </tr>
+      </thead>
+      <tbody id="anomalies-tbody"></tbody>
+    </table>
+  </div>
+</div>

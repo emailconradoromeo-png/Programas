@@ -3,38 +3,54 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Abacería - Sistema de Ventas</title>
+  <title>Abaceria - Sistema de Ventas</title>
   <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-  <aside class="sidebar">
+  <!-- Hamburger button for mobile -->
+  <button class="hamburger-btn" id="hamburger-btn" onclick="toggleSidebar()">&#9776;</button>
+  <!-- Overlay for mobile sidebar -->
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+  <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
-      <h1>Abaceria</h1>
-      <small>Sistema de Ventas</small>
+      <h1 data-i18n="app.title">Abaceria</h1>
+      <small data-i18n="app.subtitle">Sistema de Ventas</small>
     </div>
     <nav class="sidebar-nav">
       <a href="#dashboard">
-        <span class="icon">&#9632;</span> Dashboard
+        <span class="icon">&#9632;</span> <span data-i18n="nav.dashboard">Dashboard</span>
       </a>
       <a href="#products">
-        <span class="icon">&#9998;</span> Productos
+        <span class="icon">&#9998;</span> <span data-i18n="nav.products">Productos</span>
       </a>
       <a href="#categories">
-        <span class="icon">&#9776;</span> Categorías
+        <span class="icon">&#9776;</span> <span data-i18n="nav.categories">Categorias</span>
       </a>
       <a href="#pos">
-        <span class="icon">&#36;</span> Punto de Venta
+        <span class="icon">&#36;</span> <span data-i18n="nav.pos">Punto de Venta</span>
       </a>
       <a href="#reports">
-        <span class="icon">&#9993;</span> Reportes
+        <span class="icon">&#9993;</span> <span data-i18n="nav.reports">Reportes</span>
       </a>
       <a href="#inventory">
-        <span class="icon">&#9881;</span> Inventario
+        <span class="icon">&#9881;</span> <span data-i18n="nav.inventory">Inventario</span>
       </a>
       <a href="#daily-sales">
-        <span class="icon">&#9783;</span> Registro Diario
+        <span class="icon">&#9783;</span> <span data-i18n="nav.dailySales">Registro Diario</span>
+      </a>
+      <a href="#analytics">
+        <span class="icon">&#9733;</span> <span data-i18n="nav.analytics">Analitica</span>
+        <span class="nav-badge" id="analytics-badge" style="display:none">0</span>
       </a>
     </nav>
+    <div class="lang-selector-container">
+      <select id="lang-selector" class="lang-selector" onchange="setLanguage(this.value)">
+        <option value="es">ES</option>
+        <option value="fr">FR</option>
+        <option value="en">EN</option>
+      </select>
+    </div>
   </aside>
 
   <main class="main-content">
@@ -46,6 +62,7 @@
     </div>
   </main>
 
+  <script src="js/i18n.js"></script>
   <script src="js/api.js"></script>
   <script src="js/app.js"></script>
 </body>
