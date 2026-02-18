@@ -17,42 +17,61 @@
       <h1 data-i18n="app.title">Abaceria</h1>
       <small data-i18n="app.subtitle">Sistema de Ventas</small>
     </div>
+    <!-- User info section -->
+    <div class="sidebar-user-section" id="sidebar-user-section" style="display:none">
+      <div class="sidebar-user-info">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+        <div>
+          <div id="user-display-name" class="sidebar-user-name"></div>
+          <div id="user-display-rol" class="sidebar-user-rol"></div>
+        </div>
+      </div>
+    </div>
     <nav class="sidebar-nav">
       <a href="#dashboard">
-        <span class="icon">&#9632;</span> <span data-i18n="nav.dashboard">Dashboard</span>
+        <span class="icon"><svg viewBox="0 0 24 24"><path d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z"/></svg></span> <span data-i18n="nav.dashboard">Dashboard</span>
       </a>
       <a href="#products">
-        <span class="icon">&#9998;</span> <span data-i18n="nav.products">Productos</span>
+        <span class="icon"><svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V8h16v12zM6 10h2v2H6v-2zm0 4h8v2H6v-2z"/></svg></span> <span data-i18n="nav.products">Productos</span>
       </a>
       <a href="#categories">
-        <span class="icon">&#9776;</span> <span data-i18n="nav.categories">Categorias</span>
+        <span class="icon"><svg viewBox="0 0 24 24"><path d="M17.63 5.84C17.27 5.33 16.67 5 16 5L5 5.01C3.9 5.01 3 5.9 3 7v10c0 1.1.9 1.99 2 1.99L16 19c.67 0 1.27-.33 1.63-.84L22 12l-4.37-6.16z"/></svg></span> <span data-i18n="nav.categories">Categorias</span>
       </a>
       <a href="#pos">
-        <span class="icon">&#36;</span> <span data-i18n="nav.pos">Punto de Venta</span>
+        <span class="icon"><svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm10 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zM7.17 14.75l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49A1 1 0 0 0 20 4H5.21l-.94-2H1v2h2l3.6 7.59-1.35 2.44C4.52 15.37 5.48 17 7 17h12v-2H7.42c-.14 0-.25-.11-.25-.25z"/></svg></span> <span data-i18n="nav.pos">Punto de Venta</span>
       </a>
       <a href="#returns">
-        <span class="icon">&#8634;</span> <span data-i18n="nav.returns">Devoluciones</span>
+        <span class="icon"><svg viewBox="0 0 24 24"><path d="M12.5 8c-2.65 0-5.05 1.04-6.83 2.73L3 8v8h8l-2.81-2.81C9.57 11.82 10.94 11 12.5 11c2.83 0 5.15 2.08 5.58 4.79l2.48-.45C19.96 11.98 16.52 8 12.5 8z"/></svg></span> <span data-i18n="nav.returns">Devoluciones</span>
       </a>
       <a href="#reports">
-        <span class="icon">&#9993;</span> <span data-i18n="nav.reports">Reportes</span>
+        <span class="icon"><svg viewBox="0 0 24 24"><path d="M5 9.2h3V19H5V9.2zM10.6 5h2.8v14h-2.8V5zm5.6 8H19v6h-2.8v-6z"/></svg></span> <span data-i18n="nav.reports">Reportes</span>
       </a>
       <a href="#inventory">
-        <span class="icon">&#9881;</span> <span data-i18n="nav.inventory">Inventario</span>
+        <span class="icon"><svg viewBox="0 0 24 24"><path d="M20 2H4c-1 0-2 .9-2 2v3.01c0 .72.43 1.34 1 1.69V20c0 1.1 1.1 2 2 2h14c.9 0 2-.9 2-2V8.7c.57-.35 1-.97 1-1.69V4c0-1.1-1-2-2-2zm-5 12H9v-2h6v2zm5-7H4V4h16v3z"/></svg></span> <span data-i18n="nav.inventory">Inventario</span>
       </a>
       <a href="#daily-sales">
-        <span class="icon">&#9783;</span> <span data-i18n="nav.dailySales">Registro Diario</span>
+        <span class="icon"><svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM9 10H7v2h2v-2zm4 0h-2v2h2v-2zm4 0h-2v2h2v-2z"/></svg></span> <span data-i18n="nav.dailySales">Registro Diario</span>
       </a>
       <a href="#analytics">
-        <span class="icon">&#9733;</span> <span data-i18n="nav.analytics">Analitica</span>
+        <span class="icon"><svg viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6h-6z"/></svg></span> <span data-i18n="nav.analytics">Analitica</span>
         <span class="nav-badge" id="analytics-badge" style="display:none">0</span>
       </a>
+      <a href="#users" id="nav-users-link" style="display:none">
+        <span class="icon"><svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg></span> <span data-i18n="nav.users">Usuarios</span>
+      </a>
     </nav>
-    <div class="lang-selector-container">
-      <select id="lang-selector" class="lang-selector" onchange="setLanguage(this.value)">
-        <option value="es">ES</option>
-        <option value="fr">FR</option>
-        <option value="en">EN</option>
-      </select>
+    <div class="sidebar-bottom">
+      <div class="lang-selector-container">
+        <select id="lang-selector" class="lang-selector" onchange="setLanguage(this.value)">
+          <option value="es">ES</option>
+          <option value="fr">FR</option>
+          <option value="en">EN</option>
+        </select>
+      </div>
+      <button class="sidebar-logout-btn" id="logout-btn" onclick="doLogout()" style="display:none">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>
+        <span data-i18n="login.logout">Cerrar Sesion</span>
+      </button>
     </div>
   </aside>
 
@@ -65,8 +84,32 @@
     </div>
   </main>
 
+  <!-- Global Confirm Dialog -->
+  <div class="confirm-overlay" id="global-confirm">
+    <div class="confirm-box">
+      <h3 id="confirm-title"></h3>
+      <p id="confirm-message"></p>
+      <div class="confirm-actions">
+        <button class="btn btn-secondary" onclick="resolveConfirm(false)">Cancelar</button>
+        <button class="btn btn-danger" id="confirm-action-btn" onclick="resolveConfirm(true)">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast-container"></div>
+
   <script src="js/i18n.js"></script>
   <script src="js/api.js"></script>
   <script src="js/app.js"></script>
+  <script>
+    // Show/hide logout button based on login state
+    function updateLogoutBtn() {
+      const btn = document.getElementById('logout-btn');
+      if (btn) btn.style.display = isLoggedIn() ? 'flex' : 'none';
+    }
+    window.addEventListener('hashchange', updateLogoutBtn);
+    window.addEventListener('DOMContentLoaded', updateLogoutBtn);
+  </script>
 </body>
 </html>

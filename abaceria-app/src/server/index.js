@@ -5,7 +5,10 @@ require('dotenv').config();
 
 const { sequelize } = require('./models');
 const seed = require('./config/seeders');
+const { authMiddleware } = require('./middleware/auth');
 
+const authRoutes = require('./routes/auth');
+const usersRoutes = require('./routes/users');
 const categoriesRoutes = require('./routes/categories');
 const productsRoutes = require('./routes/products');
 const salesRoutes = require('./routes/sales');
@@ -21,16 +24,20 @@ const PORT = process.env.SERVER_PORT || 3456;
 app.use(cors());
 app.use(express.json());
 
-app.use('/api/categories', categoriesRoutes);
-app.use('/api/products', productsRoutes);
-app.use('/api/sales', salesRoutes);
-app.use('/api/reports', reportsRoutes);
-app.use('/api/inventory', inventoryRoutes);
-app.use('/api/daily-sales', dailySalesRoutes);
-app.use('/api/analytics', analyticsRoutes);
-app.use('/api/returns', returnsRoutes);
-
+// Public routes
 app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
+app.use('/api/auth', authRoutes);
+
+// Protected routes (require auth)
+app.use('/api/users', usersRoutes);
+app.use('/api/categories', authMiddleware, categoriesRoutes);
+app.use('/api/products', authMiddleware, productsRoutes);
+app.use('/api/sales', authMiddleware, salesRoutes);
+app.use('/api/reports', authMiddleware, reportsRoutes);
+app.use('/api/inventory', authMiddleware, inventoryRoutes);
+app.use('/api/daily-sales', authMiddleware, dailySalesRoutes);
+app.use('/api/analytics', authMiddleware, analyticsRoutes);
+app.use('/api/returns', authMiddleware, returnsRoutes);
 
 // Serve frontend static files
 app.use(express.static(path.join(__dirname, '..', 'renderer')));

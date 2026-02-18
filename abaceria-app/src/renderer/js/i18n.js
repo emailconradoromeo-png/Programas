@@ -14,6 +14,32 @@ const translations = {
     'nav.dailySales': 'Registro Diario',
     'nav.analytics': 'Analitica',
     'nav.returns': 'Devoluciones',
+    'nav.users': 'Usuarios',
+
+    // Login
+    'login.title': 'Iniciar Sesion',
+    'login.email': 'Email',
+    'login.password': 'Password',
+    'login.submit': 'Iniciar Sesion',
+    'login.required': 'Email y password son requeridos',
+    'login.logout': 'Cerrar Sesion',
+
+    // Users
+    'users.newUser': '+ Nuevo Usuario',
+    'users.editUser': 'Editar Usuario',
+    'users.role': 'Rol',
+    'users.noUsers': 'No hay usuarios',
+    'users.emailRequired': 'El email es obligatorio',
+    'users.passwordMin': 'La password debe tener al menos 6 caracteres',
+    'users.created': 'Usuario creado',
+    'users.updated': 'Usuario actualizado',
+    'users.deleted': 'Usuario eliminado',
+    'users.confirmDeleteTitle': 'Eliminar Usuario',
+    'users.confirmDelete': 'Eliminar el usuario "{name}"?',
+    'users.resetBtn': 'Reset Pass',
+    'users.resetPassword': 'Resetear Password',
+    'users.newPassword': 'Nueva Password',
+    'users.passwordReset': 'Password reseteada exitosamente',
 
     // Analytics
     'analytics.outOfStock': 'Sin Stock',
@@ -273,6 +299,32 @@ const translations = {
     'nav.dailySales': 'Registre Journalier',
     'nav.analytics': 'Analytique',
     'nav.returns': 'Retours',
+    'nav.users': 'Utilisateurs',
+
+    // Login
+    'login.title': 'Connexion',
+    'login.email': 'Email',
+    'login.password': 'Mot de passe',
+    'login.submit': 'Se Connecter',
+    'login.required': 'Email et mot de passe requis',
+    'login.logout': 'Deconnexion',
+
+    // Users
+    'users.newUser': '+ Nouvel Utilisateur',
+    'users.editUser': 'Modifier Utilisateur',
+    'users.role': 'Role',
+    'users.noUsers': 'Aucun utilisateur',
+    'users.emailRequired': "L'email est obligatoire",
+    'users.passwordMin': 'Le mot de passe doit avoir au moins 6 caracteres',
+    'users.created': 'Utilisateur cree',
+    'users.updated': 'Utilisateur mis a jour',
+    'users.deleted': 'Utilisateur supprime',
+    'users.confirmDeleteTitle': 'Supprimer Utilisateur',
+    'users.confirmDelete': 'Supprimer l\'utilisateur "{name}" ?',
+    'users.resetBtn': 'Reset MdP',
+    'users.resetPassword': 'Reinitialiser le Mot de Passe',
+    'users.newPassword': 'Nouveau Mot de Passe',
+    'users.passwordReset': 'Mot de passe reinitialise avec succes',
 
     // Returns
     'returns.findSale': 'Rechercher Vente pour Retour',
@@ -532,6 +584,32 @@ const translations = {
     'nav.dailySales': 'Daily Register',
     'nav.analytics': 'Analytics',
     'nav.returns': 'Returns',
+    'nav.users': 'Users',
+
+    // Login
+    'login.title': 'Login',
+    'login.email': 'Email',
+    'login.password': 'Password',
+    'login.submit': 'Sign In',
+    'login.required': 'Email and password are required',
+    'login.logout': 'Sign Out',
+
+    // Users
+    'users.newUser': '+ New User',
+    'users.editUser': 'Edit User',
+    'users.role': 'Role',
+    'users.noUsers': 'No users',
+    'users.emailRequired': 'Email is required',
+    'users.passwordMin': 'Password must be at least 6 characters',
+    'users.created': 'User created',
+    'users.updated': 'User updated',
+    'users.deleted': 'User deleted',
+    'users.confirmDeleteTitle': 'Delete User',
+    'users.confirmDelete': 'Delete user "{name}"?',
+    'users.resetBtn': 'Reset Pass',
+    'users.resetPassword': 'Reset Password',
+    'users.newPassword': 'New Password',
+    'users.passwordReset': 'Password reset successfully',
 
     // Returns
     'returns.findSale': 'Find Sale to Return',

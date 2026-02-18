@@ -120,15 +120,24 @@ body {
 }
 
 .sidebar-nav a .icon {
-  font-size: 18px;
-  width: 24px;
-  text-align: center;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.sidebar-nav a .icon svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+  flex-shrink: 0;
 }
 
 /* Language Selector */
 .lang-selector-container {
   padding: 12px 20px;
-  border-top: 1px solid var(--gray-700);
 }
 
 .lang-selector {
@@ -795,6 +804,194 @@ select.form-control {
   color: var(--gray-700);
 }
 
+/* Loading Spinner */
+.loading-spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px;
+}
+
+.loading-spinner::after {
+  content: '';
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--gray-200);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Button Loading State */
+.btn.loading {
+  pointer-events: none;
+  opacity: 0.7;
+  position: relative;
+}
+
+.btn.loading::after {
+  content: '';
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  margin-left: 6px;
+}
+
+.btn-secondary.loading::after {
+  border-color: rgba(0, 0, 0, 0.15);
+  border-top-color: var(--gray-700);
+}
+
+/* Toast Notifications */
+#toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 3000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.toast {
+  padding: 12px 20px;
+  border-radius: 8px;
+  max-width: 400px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: toastIn 0.3s ease;
+  pointer-events: auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.toast-success {
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}
+
+.toast-danger {
+  background: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.toast-text { flex: 1; }
+
+.toast-close {
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-size: 18px;
+  line-height: 1;
+  color: inherit;
+  opacity: 0.6;
+  padding: 0;
+}
+
+.toast-close:hover { opacity: 1; }
+
+@keyframes toastIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes toastOut {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(100%); opacity: 0; }
+}
+
+/* Form Validation */
+.form-control.error {
+  border-color: var(--danger);
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}
+
+.form-error {
+  color: var(--danger);
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.form-group label .required {
+  color: var(--danger);
+  margin-left: 2px;
+}
+
+/* POS Cart Flash Animation */
+@keyframes cart-flash {
+  from { background: #dcfce7; }
+  to { background: transparent; }
+}
+
+.cart-item-added {
+  animation: cart-flash 0.6s ease;
+}
+
+/* POS Stock Colors */
+.pos-stock-ok { color: var(--success); font-weight: 600; }
+.pos-stock-low { color: var(--warning); font-weight: 600; }
+.pos-stock-zero { color: var(--danger); font-weight: 600; }
+
+/* POS Cart Count Badge */
+.pos-cart-count {
+  background: var(--primary);
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+  min-width: 22px;
+  height: 22px;
+  border-radius: 11px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
+  margin-left: 8px;
+}
+
+/* Badge Devolucion */
+.badge-devolucion { background: #f3e8ff; color: #7c3aed; }
+
+/* Modal Transitions */
+.modal {
+  transform: scale(0.95);
+  transition: transform 0.2s ease;
+}
+
+.modal-overlay.active .modal {
+  transform: scale(1);
+}
+
+.confirm-box {
+  transform: scale(0.95);
+  transition: transform 0.2s ease;
+}
+
+.confirm-overlay.active .confirm-box {
+  transform: scale(1);
+}
+
+/* Dashboard Card Animations */
+@keyframes cardFadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.card-animate {
+  animation: cardFadeIn 0.3s ease forwards;
+  opacity: 0;
+}
+
 /* ===========================
    RESPONSIVE DESIGN
    =========================== */
@@ -996,6 +1193,115 @@ select.form-control {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
+}
+
+/* Toast responsive */
+@media (max-width: 480px) {
+  #toast-container {
+    left: 12px;
+    right: 12px;
+  }
+  .toast {
+    max-width: 100%;
+  }
+}
+
+/* Login Page */
+.login-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  width: 100%;
+  background: var(--gray-100);
+}
+
+.login-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+  width: 100%;
+  max-width: 400px;
+  padding: 40px;
+  margin: 16px;
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.login-header h1 {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin-bottom: 4px;
+}
+
+.login-header p {
+  color: var(--gray-500);
+  font-size: 14px;
+}
+
+.login-btn {
+  width: 100%;
+  padding: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  margin-top: 8px;
+  justify-content: center;
+}
+
+/* Sidebar User Info */
+.sidebar-user-section {
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--gray-700);
+}
+
+.sidebar-user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--gray-300);
+}
+
+.sidebar-user-info svg {
+  flex-shrink: 0;
+}
+
+.sidebar-user-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: white;
+}
+
+.sidebar-user-rol {
+  font-size: 11px;
+  color: var(--gray-400);
+}
+
+/* Sidebar Bottom */
+.sidebar-bottom {
+  border-top: 1px solid var(--gray-700);
+}
+
+.sidebar-logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 20px;
+  background: none;
+  border: none;
+  color: var(--gray-400);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.sidebar-logout-btn:hover {
+  background: var(--gray-800);
+  color: var(--danger);
 }
 
 /* Print Styles */

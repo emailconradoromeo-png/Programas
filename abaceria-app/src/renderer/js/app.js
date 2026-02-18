@@ -8,15 +8,79 @@ const routes = {
   'daily-sales': { titleKey: 'nav.dailySales', file: 'pages/daily-sales.html', init: 'initDailySales' },
   analytics: { titleKey: 'nav.analytics', file: 'pages/analytics.html', init: 'initAnalytics' },
   returns: { titleKey: 'nav.returns', file: 'pages/returns.html', init: 'initReturns' },
+  users: { titleKey: 'nav.users', file: 'pages/users.html', init: 'initUsers', adminOnly: true },
+  login: { titleKey: 'login.title', file: 'pages/login.html', init: 'initLogin', public: true },
 };
 
 let currentPage = null;
+
+function isLoggedIn() {
+  return !!localStorage.getItem('abaceria-token');
+}
+
+function getCurrentUser() {
+  try {
+    return JSON.parse(localStorage.getItem('abaceria-user'));
+  } catch { return null; }
+}
+
+function updateUserInfo() {
+  const user = getCurrentUser();
+  const nameEl = document.getElementById('user-display-name');
+  const rolEl = document.getElementById('user-display-rol');
+  const userSection = document.getElementById('sidebar-user-section');
+  const usersLink = document.getElementById('nav-users-link');
+
+  if (user && isLoggedIn()) {
+    if (nameEl) nameEl.textContent = user.nombre;
+    if (rolEl) rolEl.textContent = user.rol === 'admin' ? 'Admin' : 'Cajero';
+    if (userSection) userSection.style.display = 'block';
+    if (usersLink) usersLink.style.display = user.rol === 'admin' ? 'flex' : 'none';
+  } else {
+    if (userSection) userSection.style.display = 'none';
+    if (usersLink) usersLink.style.display = 'none';
+  }
+}
+
+function doLogout() {
+  localStorage.removeItem('abaceria-token');
+  localStorage.removeItem('abaceria-user');
+  window.location.hash = '#login';
+}
 
 async function navigateTo(page) {
   const route = routes[page];
   if (!route) return navigateTo('dashboard');
 
+  // Auth guard
+  if (!route.public && !isLoggedIn()) {
+    return navigateTo('login');
+  }
+
+  // If logged in and trying to go to login, redirect to dashboard
+  if (page === 'login' && isLoggedIn()) {
+    return navigateTo('dashboard');
+  }
+
+  // Admin-only pages
+  if (route.adminOnly) {
+    const user = getCurrentUser();
+    if (!user || user.rol !== 'admin') {
+      return navigateTo('dashboard');
+    }
+  }
+
   currentPage = page;
+
+  // Show/hide sidebar and header on login page
+  const sidebar = document.getElementById('sidebar');
+  const mainHeader = document.querySelector('.content-header');
+  const hamburger = document.getElementById('hamburger-btn');
+  const isLogin = page === 'login';
+
+  if (sidebar) sidebar.style.display = isLogin ? 'none' : '';
+  if (mainHeader) mainHeader.style.display = isLogin ? 'none' : '';
+  if (hamburger) hamburger.style.display = isLogin ? 'none' : '';
 
   // Update sidebar active state
   document.querySelectorAll('.sidebar-nav a').forEach(link => {
@@ -24,13 +88,16 @@ async function navigateTo(page) {
   });
 
   // Update header
-  document.getElementById('page-title').textContent = t(route.titleKey);
+  const pageTitle = document.getElementById('page-title');
+  if (pageTitle) pageTitle.textContent = t(route.titleKey);
 
   // Close mobile sidebar
-  const sidebar = document.getElementById('sidebar');
   if (sidebar && sidebar.classList.contains('open')) {
     toggleSidebar();
   }
+
+  // Update user info
+  updateUserInfo();
 
   // Load page content
   try {
@@ -63,13 +130,18 @@ window.addEventListener('DOMContentLoaded', () => {
   if (sel) sel.value = getLanguage();
   // Apply translations to static elements
   applyTranslations();
+  // Update user info in sidebar
+  updateUserInfo();
   handleHashChange();
   // Load alert badge and start polling
-  updateAlertBadge();
-  setInterval(updateAlertBadge, 5 * 60 * 1000);
+  if (isLoggedIn()) {
+    updateAlertBadge();
+    setInterval(updateAlertBadge, 5 * 60 * 1000);
+  }
 });
 
 async function updateAlertBadge() {
+  if (!isLoggedIn()) return;
   try {
     const data = await api.get('/analytics/alerts');
     const count = data.outOfStock + data.criticalRestock + data.warningRestock;
@@ -109,12 +181,89 @@ function formatDateTime(dateStr) {
   return d.toLocaleDateString(getLocale(), { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 
+// --- Toast Notification System ---
+function showToast(message, type = 'danger', duration = 5000) {
+  const container = document.getElementById('toast-container');
+  if (!container) return;
+
+  // Limit to 3 visible toasts
+  while (container.children.length >= 3) {
+    container.firstChild.remove();
+  }
+
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.innerHTML = `<span class="toast-text">${message}</span><button class="toast-close" onclick="this.parentElement.remove()">&times;</button>`;
+  container.appendChild(toast);
+
+  const timer = setTimeout(() => {
+    toast.style.animation = 'toastOut 0.3s ease forwards';
+    toast.addEventListener('animationend', () => toast.remove());
+  }, duration);
+
+  toast.querySelector('.toast-close').addEventListener('click', () => clearTimeout(timer));
+}
+
+// Backward-compatible showAlert → now calls showToast
 function showAlert(container, message, type = 'danger') {
-  const div = document.createElement('div');
-  div.className = `alert alert-${type}`;
-  div.textContent = message;
-  container.prepend(div);
-  setTimeout(() => div.remove(), 4000);
+  showToast(message, type);
+}
+
+// --- Loading States ---
+function showLoading(container) {
+  container.innerHTML = '<div class="loading-spinner"></div>';
+}
+
+function setButtonLoading(btn, loading) {
+  if (loading) {
+    btn.classList.add('loading');
+    btn._originalText = btn.textContent;
+  } else {
+    btn.classList.remove('loading');
+  }
+}
+
+// --- Global Confirm Dialog ---
+let confirmResolve = null;
+function showConfirm(title, message, actionLabel = 'Confirmar', btnClass = 'btn-danger') {
+  return new Promise(resolve => {
+    confirmResolve = resolve;
+    document.getElementById('confirm-title').textContent = title;
+    document.getElementById('confirm-message').textContent = message;
+    const actionBtn = document.getElementById('confirm-action-btn');
+    actionBtn.textContent = actionLabel;
+    actionBtn.className = `btn ${btnClass}`;
+    document.getElementById('global-confirm').classList.add('active');
+  });
+}
+
+function resolveConfirm(value) {
+  document.getElementById('global-confirm').classList.remove('active');
+  if (confirmResolve) {
+    confirmResolve(value);
+    confirmResolve = null;
+  }
+}
+
+// --- Form Validation ---
+function validateField(input, condition, errorMsg) {
+  const existing = input.parentElement.querySelector('.form-error');
+  if (existing) existing.remove();
+  if (!condition) {
+    input.classList.add('error');
+    const err = document.createElement('div');
+    err.className = 'form-error';
+    err.textContent = errorMsg;
+    input.parentElement.appendChild(err);
+    return false;
+  }
+  input.classList.remove('error');
+  return true;
+}
+
+function clearValidation(container) {
+  container.querySelectorAll('.form-control.error').forEach(el => el.classList.remove('error'));
+  container.querySelectorAll('.form-error').forEach(el => el.remove());
 }
 
 function todayISO() {
@@ -128,3 +277,36 @@ function toggleSidebar() {
   sidebar.classList.toggle('open');
   overlay.classList.toggle('active');
 }
+
+// --- Escape key to close modals ---
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    // Close global confirm first
+    const gc = document.getElementById('global-confirm');
+    if (gc && gc.classList.contains('active')) {
+      resolveConfirm(false);
+      return;
+    }
+    // Close any active modal overlay
+    const activeModal = document.querySelector('.modal-overlay.active, .confirm-overlay.active');
+    if (activeModal) {
+      activeModal.classList.remove('active');
+    }
+  }
+});
+
+// --- Focus trap for modals ---
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Tab') return;
+  const activeModal = document.querySelector('.modal-overlay.active .modal, .confirm-overlay.active .confirm-box');
+  if (!activeModal) return;
+  const focusable = activeModal.querySelectorAll('button, input, select, textarea, [tabindex]:not([tabindex="-1"])');
+  if (focusable.length === 0) return;
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  if (e.shiftKey) {
+    if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+  } else {
+    if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+  }
+});

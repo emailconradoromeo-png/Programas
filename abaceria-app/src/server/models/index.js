@@ -6,6 +6,7 @@ const SaleItem = require('./SaleItem');
 const InventoryMovement = require('./InventoryMovement');
 const Return = require('./Return');
 const ReturnItem = require('./ReturnItem');
+const User = require('./User');
 
 // Asociaciones
 Category.hasMany(Product, { foreignKey: 'category_id', as: 'products' });
@@ -39,4 +40,4 @@ ReturnItem.belongsTo(SaleItem, { foreignKey: 'sale_item_id', as: 'saleItem' });
 Return.hasMany(InventoryMovement, { foreignKey: 'return_id', as: 'movements' });
 InventoryMovement.belongsTo(Return, { foreignKey: 'return_id', as: 'return' });
 
-module.exports = { sequelize, Category, Product, Sale, SaleItem, InventoryMovement, Return, ReturnItem };
+module.exports = { sequelize, Category, Product, Sale, SaleItem, InventoryMovement, Return, ReturnItem, User };
