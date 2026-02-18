@@ -1,0 +1,148 @@
+<!-- Resumen -->
+<div class="inventory-summary" id="inv-summary">
+  <div class="card">
+    <div class="card-label">Total Productos</div>
+    <div class="card-value" id="inv-total">0</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Valor Inventario</div>
+    <div class="card-value success" id="inv-valor">0.00</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Bajo Stock (1-5)</div>
+    <div class="card-value warning" id="inv-bajo">0</div>
+  </div>
+  <div class="card">
+    <div class="card-label">Sin Stock</div>
+    <div class="card-value danger" id="inv-sin">0</div>
+  </div>
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchInvTab('stock')">Estado de Stock</button>
+  <button class="tab-btn" onclick="switchInvTab('movements')">Historial de Movimientos</button>
+</div>
+
+<!-- Tab: Estado de Stock -->
+<div class="tab-content active" id="tab-stock">
+  <div class="toolbar">
+    <input type="text" class="form-control search-input" placeholder="Buscar producto..." id="inv-search" oninput="loadInventoryStatus()">
+    <select class="form-control" style="width: 180px;" id="inv-stock-filter" onchange="loadInventoryStatus()">
+      <option value="">Todos</option>
+      <option value="sin_stock">Sin stock</option>
+      <option value="bajo">Bajo stock (1-5)</option>
+      <option value="normal">Normal (&gt;5)</option>
+    </select>
+    <button class="btn btn-success" onclick="openEntryModal()">+ Entrada</button>
+    <button class="btn btn-primary" onclick="openAdjustmentModal()">Ajuste</button>
+  </div>
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Producto</th>
+          <th>Categoría</th>
+          <th>Precio</th>
+          <th>Stock</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody id="inv-stock-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Tab: Historial de Movimientos -->
+<div class="tab-content" id="tab-movements">
+  <div class="toolbar">
+    <input type="date" class="form-control" style="width: 160px;" id="mov-from">
+    <input type="date" class="form-control" style="width: 160px;" id="mov-to">
+    <select class="form-control" style="width: 150px;" id="mov-tipo" onchange="loadMovements()">
+      <option value="">Todos los tipos</option>
+      <option value="entrada">Entradas</option>
+      <option value="salida">Salidas</option>
+      <option value="ajuste">Ajustes</option>
+    </select>
+    <button class="btn btn-primary" onclick="loadMovements()">Filtrar</button>
+  </div>
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Producto</th>
+          <th>Tipo</th>
+          <th>Cantidad</th>
+          <th>Stock Ant.</th>
+          <th>Stock Nuevo</th>
+          <th>Referencia</th>
+        </tr>
+      </thead>
+      <tbody id="inv-movements-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal Entrada de Mercancía -->
+<div class="modal-overlay" id="entry-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Entrada de Mercancía</h3>
+      <button class="modal-close" onclick="closeEntryModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div id="entry-alert"></div>
+      <div class="form-group">
+        <label>Producto</label>
+        <select class="form-control" id="entry-product"></select>
+      </div>
+      <div class="form-group">
+        <label>Cantidad</label>
+        <input type="number" class="form-control" id="entry-cantidad" min="1" value="1">
+      </div>
+      <div class="form-group">
+        <label>Nota (opcional)</label>
+        <textarea class="form-control" id="entry-nota" rows="2"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeEntryModal()">Cancelar</button>
+      <button class="btn btn-success" onclick="submitEntry()">Registrar Entrada</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Ajuste de Inventario -->
+<div class="modal-overlay" id="adjustment-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Ajuste de Inventario</h3>
+      <button class="modal-close" onclick="closeAdjustmentModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div id="adjustment-alert"></div>
+      <div class="form-group">
+        <label>Producto</label>
+        <select class="form-control" id="adj-product" onchange="showCurrentStock()"></select>
+      </div>
+      <div class="form-group">
+        <label>Stock Actual en Sistema</label>
+        <input type="text" class="form-control" id="adj-stock-actual" readonly disabled>
+      </div>
+      <div class="form-group">
+        <label>Stock Real (conteo físico)</label>
+        <input type="number" class="form-control" id="adj-stock-real" min="0" value="0">
+      </div>
+      <div class="form-group">
+        <label>Nota (opcional)</label>
+        <textarea class="form-control" id="adj-nota" rows="2"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeAdjustmentModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="submitAdjustment()">Aplicar Ajuste</button>
+    </div>
+  </div>
+</div>
