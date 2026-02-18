@@ -1,52 +1,52 @@
 <!-- Resumen -->
 <div class="inventory-summary" id="inv-summary">
   <div class="card">
-    <div class="card-label">Total Productos</div>
+    <div class="card-label" data-i18n="inventory.totalProducts">Total Productos</div>
     <div class="card-value" id="inv-total">0</div>
   </div>
   <div class="card">
-    <div class="card-label">Valor Inventario</div>
-    <div class="card-value success" id="inv-valor">0.00</div>
+    <div class="card-label" data-i18n="inventory.inventoryValue">Valor Inventario</div>
+    <div class="card-value success" id="inv-valor">0 FCFA</div>
   </div>
   <div class="card">
-    <div class="card-label">Bajo Stock (1-5)</div>
+    <div class="card-label" data-i18n="inventory.lowStock">Bajo Stock (1-5)</div>
     <div class="card-value warning" id="inv-bajo">0</div>
   </div>
   <div class="card">
-    <div class="card-label">Sin Stock</div>
+    <div class="card-label" data-i18n="inventory.noStock">Sin Stock</div>
     <div class="card-value danger" id="inv-sin">0</div>
   </div>
 </div>
 
 <!-- Tabs -->
 <div class="tabs">
-  <button class="tab-btn active" onclick="switchInvTab('stock')">Estado de Stock</button>
-  <button class="tab-btn" onclick="switchInvTab('movements')">Historial de Movimientos</button>
+  <button class="tab-btn active" onclick="switchInvTab('stock')" data-i18n="inventory.stockStatus">Estado de Stock</button>
+  <button class="tab-btn" onclick="switchInvTab('movements')" data-i18n="inventory.movementHistory">Historial de Movimientos</button>
 </div>
 
 <!-- Tab: Estado de Stock -->
 <div class="tab-content active" id="tab-stock">
   <div class="toolbar">
-    <input type="text" class="form-control search-input" placeholder="Buscar producto..." id="inv-search" oninput="loadInventoryStatus()">
+    <input type="text" class="form-control search-input" data-i18n-placeholder="inventory.searchPlaceholder" placeholder="Buscar producto..." id="inv-search" oninput="loadInventoryStatus()">
     <select class="form-control" style="width: 180px;" id="inv-stock-filter" onchange="loadInventoryStatus()">
-      <option value="">Todos</option>
-      <option value="sin_stock">Sin stock</option>
-      <option value="bajo">Bajo stock (1-5)</option>
-      <option value="normal">Normal (&gt;5)</option>
+      <option value="" data-i18n="inventory.all">Todos</option>
+      <option value="sin_stock" data-i18n="inventory.noStockFilter">Sin stock</option>
+      <option value="bajo" data-i18n="inventory.lowStockFilter">Bajo stock (1-5)</option>
+      <option value="normal" data-i18n="inventory.normalFilter">Normal (&gt;5)</option>
     </select>
-    <button class="btn btn-success" onclick="openEntryModal()">+ Entrada</button>
-    <button class="btn btn-primary" onclick="openAdjustmentModal()">Ajuste</button>
+    <button class="btn btn-success" onclick="openEntryModal()" data-i18n="inventory.entry">+ Entrada</button>
+    <button class="btn btn-primary" onclick="openAdjustmentModal()" data-i18n="inventory.adjustment">Ajuste</button>
   </div>
   <div class="table-container">
     <table>
       <thead>
         <tr>
-          <th>Código</th>
-          <th>Producto</th>
-          <th>Categoría</th>
-          <th>Precio</th>
-          <th>Stock</th>
-          <th>Estado</th>
+          <th data-i18n="table.code">Codigo</th>
+          <th data-i18n="table.product">Producto</th>
+          <th data-i18n="table.category">Categoria</th>
+          <th data-i18n="table.price">Precio</th>
+          <th data-i18n="table.stock">Stock</th>
+          <th data-i18n="table.status">Estado</th>
         </tr>
       </thead>
       <tbody id="inv-stock-body"></tbody>
@@ -60,24 +60,25 @@
     <input type="date" class="form-control" style="width: 160px;" id="mov-from">
     <input type="date" class="form-control" style="width: 160px;" id="mov-to">
     <select class="form-control" style="width: 150px;" id="mov-tipo" onchange="loadMovements()">
-      <option value="">Todos los tipos</option>
-      <option value="entrada">Entradas</option>
-      <option value="salida">Salidas</option>
-      <option value="ajuste">Ajustes</option>
+      <option value="" data-i18n="inventory.allTypes">Todos los tipos</option>
+      <option value="entrada" data-i18n="inventory.entries">Entradas</option>
+      <option value="salida" data-i18n="inventory.exits">Salidas</option>
+      <option value="ajuste" data-i18n="inventory.adjustments">Ajustes</option>
+      <option value="devolucion" data-i18n="inventory.returns">Devoluciones</option>
     </select>
-    <button class="btn btn-primary" onclick="loadMovements()">Filtrar</button>
+    <button class="btn btn-primary" onclick="loadMovements()" data-i18n="btn.filter">Filtrar</button>
   </div>
   <div class="table-container">
     <table>
       <thead>
         <tr>
-          <th>Fecha</th>
-          <th>Producto</th>
-          <th>Tipo</th>
-          <th>Cantidad</th>
-          <th>Stock Ant.</th>
-          <th>Stock Nuevo</th>
-          <th>Referencia</th>
+          <th data-i18n="table.date">Fecha</th>
+          <th data-i18n="table.product">Producto</th>
+          <th data-i18n="table.type">Tipo</th>
+          <th data-i18n="table.qty">Cant.</th>
+          <th data-i18n="table.prevStock">Stock Ant.</th>
+          <th data-i18n="table.newStock">Stock Nuevo</th>
+          <th data-i18n="table.reference">Referencia</th>
         </tr>
       </thead>
       <tbody id="inv-movements-body"></tbody>
@@ -85,31 +86,31 @@
   </div>
 </div>
 
-<!-- Modal Entrada de Mercancía -->
+<!-- Modal Entrada de Mercancia -->
 <div class="modal-overlay" id="entry-modal">
   <div class="modal">
     <div class="modal-header">
-      <h3>Entrada de Mercancía</h3>
+      <h3 data-i18n="inventory.entryModal">Entrada de Mercancia</h3>
       <button class="modal-close" onclick="closeEntryModal()">&times;</button>
     </div>
     <div class="modal-body">
       <div id="entry-alert"></div>
       <div class="form-group">
-        <label>Producto</label>
+        <label data-i18n="label.product">Producto</label>
         <select class="form-control" id="entry-product"></select>
       </div>
       <div class="form-group">
-        <label>Cantidad</label>
+        <label data-i18n="inventory.qty">Cantidad</label>
         <input type="number" class="form-control" id="entry-cantidad" min="1" value="1">
       </div>
       <div class="form-group">
-        <label>Nota (opcional)</label>
+        <label data-i18n="inventory.note">Nota (opcional)</label>
         <textarea class="form-control" id="entry-nota" rows="2"></textarea>
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeEntryModal()">Cancelar</button>
-      <button class="btn btn-success" onclick="submitEntry()">Registrar Entrada</button>
+      <button class="btn btn-secondary" onclick="closeEntryModal()" data-i18n="btn.cancel">Cancelar</button>
+      <button class="btn btn-success" onclick="submitEntry()" data-i18n="inventory.registerEntry">Registrar Entrada</button>
     </div>
   </div>
 </div>
@@ -118,31 +119,31 @@
 <div class="modal-overlay" id="adjustment-modal">
   <div class="modal">
     <div class="modal-header">
-      <h3>Ajuste de Inventario</h3>
+      <h3 data-i18n="inventory.adjustmentModal">Ajuste de Inventario</h3>
       <button class="modal-close" onclick="closeAdjustmentModal()">&times;</button>
     </div>
     <div class="modal-body">
       <div id="adjustment-alert"></div>
       <div class="form-group">
-        <label>Producto</label>
+        <label data-i18n="label.product">Producto</label>
         <select class="form-control" id="adj-product" onchange="showCurrentStock()"></select>
       </div>
       <div class="form-group">
-        <label>Stock Actual en Sistema</label>
+        <label data-i18n="inventory.currentStock">Stock Actual en Sistema</label>
         <input type="text" class="form-control" id="adj-stock-actual" readonly disabled>
       </div>
       <div class="form-group">
-        <label>Stock Real (conteo físico)</label>
+        <label data-i18n="inventory.realStock">Stock Real (conteo fisico)</label>
         <input type="number" class="form-control" id="adj-stock-real" min="0" value="0">
       </div>
       <div class="form-group">
-        <label>Nota (opcional)</label>
+        <label data-i18n="inventory.note">Nota (opcional)</label>
         <textarea class="form-control" id="adj-nota" rows="2"></textarea>
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeAdjustmentModal()">Cancelar</button>
-      <button class="btn btn-primary" onclick="submitAdjustment()">Aplicar Ajuste</button>
+      <button class="btn btn-secondary" onclick="closeAdjustmentModal()" data-i18n="btn.cancel">Cancelar</button>
+      <button class="btn btn-primary" onclick="submitAdjustment()" data-i18n="inventory.applyAdjustment">Aplicar Ajuste</button>
     </div>
   </div>
 </div>

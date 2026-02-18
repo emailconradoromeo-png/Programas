@@ -1,33 +1,37 @@
-<!-- Navegación por día -->
+<!-- Navegacion por dia -->
 <div class="day-nav">
-  <button class="btn btn-secondary" onclick="changeDay(-1)">&larr; Anterior</button>
+  <button class="btn btn-secondary" onclick="changeDay(-1)">&larr; <span data-i18n="dailySales.previous">Anterior</span></button>
   <input type="date" id="ds-date" onchange="loadDailySales()">
-  <button class="btn btn-secondary" onclick="changeDay(1)">Siguiente &rarr;</button>
-  <button class="btn btn-primary" onclick="goToday()">Hoy</button>
-  <button class="btn btn-success" onclick="showCierre()">Cierre de Caja</button>
-  <button class="btn btn-secondary" onclick="window.print()">Imprimir</button>
+  <button class="btn btn-secondary" onclick="changeDay(1)"><span data-i18n="dailySales.next">Siguiente</span> &rarr;</button>
+  <button class="btn btn-primary" onclick="goToday()" data-i18n="dailySales.today">Hoy</button>
+  <button class="btn btn-success" onclick="showCierre()" data-i18n="dailySales.cashClose">Cierre de Caja</button>
+  <button class="btn btn-secondary" onclick="window.print()" data-i18n="dailySales.print">Imprimir</button>
 </div>
 
-<!-- Resumen del día -->
+<!-- Resumen del dia -->
 <div class="cards-grid" id="ds-summary">
   <div class="card">
-    <div class="card-label">Ventas del Día</div>
+    <div class="card-label" data-i18n="dailySales.daySales">Ventas del Dia</div>
     <div class="card-value" id="ds-total-ventas">0</div>
   </div>
   <div class="card">
-    <div class="card-label">Ingresos del Día</div>
-    <div class="card-value success" id="ds-total-ingresos">0.00</div>
+    <div class="card-label" data-i18n="dailySales.dayIncome">Ingresos del Dia</div>
+    <div class="card-value success" id="ds-total-ingresos">0 FCFA</div>
   </div>
   <div class="card">
-    <div class="card-label">Artículos Vendidos</div>
+    <div class="card-label" data-i18n="dailySales.itemsSold">Articulos Vendidos</div>
     <div class="card-value" id="ds-total-items">0</div>
+  </div>
+  <div class="card">
+    <div class="card-label" data-i18n="returns.refundsToday">Reembolsos</div>
+    <div class="card-value danger" id="ds-total-reembolsos">0 FCFA</div>
   </div>
 </div>
 
 <!-- Tabs -->
 <div class="tabs">
-  <button class="tab-btn active" onclick="switchDsTab('ventas', this)">Ventas del Día</button>
-  <button class="tab-btn" onclick="switchDsTab('cierre', this)">Cierre de Caja</button>
+  <button class="tab-btn active" onclick="switchDsTab('ventas', this)" data-i18n="dailySales.salesTab">Ventas del Dia</button>
+  <button class="tab-btn" onclick="switchDsTab('cierre', this)" data-i18n="dailySales.closeTab">Cierre de Caja</button>
 </div>
 
 <!-- Tab: Lista de ventas -->
@@ -38,12 +42,12 @@
 <!-- Tab: Cierre de caja -->
 <div class="tab-content" id="tab-cierre">
   <div id="ds-cierre-content">
-    <p class="empty-state">Haga clic en "Cierre de Caja" para generar el reporte</p>
+    <p class="empty-state" data-i18n="dailySales.cierreHint">Haga clic en "Cierre de Caja" para generar el reporte</p>
   </div>
 </div>
 
-<!-- Fecha display para impresión -->
+<!-- Fecha display para impresion -->
 <div id="ds-print-header" style="display:none;">
-  <h2>Registro Diario de Ventas</h2>
+  <h2 data-i18n="dailySales.printTitle">Registro Diario de Ventas</h2>
   <p id="ds-print-date"></p>
 </div>

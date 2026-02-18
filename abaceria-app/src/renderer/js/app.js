@@ -7,6 +7,7 @@ const routes = {
   inventory: { titleKey: 'nav.inventory', file: 'pages/inventory.html', init: 'initInventory' },
   'daily-sales': { titleKey: 'nav.dailySales', file: 'pages/daily-sales.html', init: 'initDailySales' },
   analytics: { titleKey: 'nav.analytics', file: 'pages/analytics.html', init: 'initAnalytics' },
+  returns: { titleKey: 'nav.returns', file: 'pages/returns.html', init: 'initReturns' },
 };
 
 let currentPage = null;

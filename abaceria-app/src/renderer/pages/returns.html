@@ -1,0 +1,40 @@
+<div id="returns-alerts"></div>
+
+<!-- Buscar venta para devolver -->
+<div class="report-section">
+  <h3 data-i18n="returns.findSale">Buscar Venta para Devolver</h3>
+  <div class="toolbar">
+    <input type="number" class="form-control" id="return-sale-id" placeholder="ID de Venta" min="1" style="width:150px">
+    <button class="btn btn-primary" onclick="searchSaleForReturn()" data-i18n="returns.search">Buscar</button>
+  </div>
+  <div id="return-sale-detail"></div>
+</div>
+
+<!-- Historial de devoluciones -->
+<div class="report-section">
+  <h3 data-i18n="returns.history">Historial de Devoluciones</h3>
+  <div class="toolbar">
+    <input type="date" class="form-control" style="width:160px" id="ret-from">
+    <input type="date" class="form-control" style="width:160px" id="ret-to">
+    <button class="btn btn-primary" onclick="loadReturns()" data-i18n="btn.filter">Filtrar</button>
+  </div>
+  <div id="returns-list"></div>
+</div>
+
+<!-- Modal de confirmacion -->
+<div class="modal-overlay" id="return-confirm-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 data-i18n="returns.confirmTitle">Confirmar Devolucion</h3>
+      <button class="modal-close" onclick="closeReturnModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p data-i18n="returns.confirmMsg">Desea procesar esta devolucion?</p>
+      <div id="return-confirm-summary"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeReturnModal()" data-i18n="btn.cancel">Cancelar</button>
+      <button class="btn btn-primary" onclick="confirmReturn()" data-i18n="btn.confirm">Confirmar</button>
+    </div>
+  </div>
+</div>

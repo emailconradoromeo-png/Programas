@@ -1,0 +1,93 @@
+<div id="reports-alerts"></div>
+
+<div class="report-filters">
+  <label data-i18n="reports.from">Desde:</label>
+  <input type="date" id="report-from">
+  <label data-i18n="reports.to">Hasta:</label>
+  <input type="date" id="report-to">
+  <button class="btn btn-primary" onclick="loadReports()" data-i18n="btn.filter">Filtrar</button>
+  <div class="preset-btns">
+    <button class="btn btn-secondary" onclick="setPreset('today')" data-i18n="reports.today">Hoy</button>
+    <button class="btn btn-secondary" onclick="setPreset('week')" data-i18n="reports.week">Semana</button>
+    <button class="btn btn-secondary" onclick="setPreset('month')" data-i18n="reports.month">Mes</button>
+  </div>
+</div>
+
+<!-- Resumen -->
+<div class="cards-grid" id="report-summary">
+  <div class="card">
+    <div class="card-label" data-i18n="reports.totalSales">Total Ventas</div>
+    <div class="card-value" id="rpt-total-ventas">--</div>
+  </div>
+  <div class="card">
+    <div class="card-label" data-i18n="reports.totalIncome">Ingresos Totales</div>
+    <div class="card-value success" id="rpt-total-ingresos">--</div>
+  </div>
+  <div class="card">
+    <div class="card-label" data-i18n="reports.itemsSold">Articulos Vendidos</div>
+    <div class="card-value" id="rpt-total-items">--</div>
+  </div>
+  <div class="card">
+    <div class="card-label" data-i18n="reports.totalReturns">Total Devoluciones</div>
+    <div class="card-value danger" id="rpt-total-devoluciones">--</div>
+  </div>
+</div>
+
+<!-- Ventas por Dia -->
+<div class="report-section">
+  <h3 data-i18n="reports.salesByDay">Ventas por Dia</h3>
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th data-i18n="table.date">Fecha</th>
+          <th data-i18n="table.sales">Ventas</th>
+          <th data-i18n="table.income">Ingresos</th>
+        </tr>
+      </thead>
+      <tbody id="rpt-by-day">
+        <tr><td colspan="3" class="empty-state" data-i18n="reports.selectDateRange">Seleccione un rango de fechas</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Top Productos -->
+<div class="report-section">
+  <h3 data-i18n="reports.top10">Top 10 Productos Vendidos</h3>
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th data-i18n="table.id">#</th>
+          <th data-i18n="table.product">Producto</th>
+          <th data-i18n="table.code">Codigo</th>
+          <th data-i18n="table.unitsSold">Unidades Vendidas</th>
+          <th data-i18n="table.income">Ingresos</th>
+        </tr>
+      </thead>
+      <tbody id="rpt-top-products">
+        <tr><td colspan="5" class="empty-state" data-i18n="reports.selectDateRange">Seleccione un rango de fechas</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Por Categoria -->
+<div class="report-section">
+  <h3 data-i18n="reports.byCategory">Ingresos por Categoria</h3>
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th data-i18n="table.category">Categoria</th>
+          <th data-i18n="table.unitsSold">Unidades Vendidas</th>
+          <th data-i18n="table.income">Ingresos</th>
+        </tr>
+      </thead>
+      <tbody id="rpt-by-category">
+        <tr><td colspan="3" class="empty-state" data-i18n="reports.selectDateRange">Seleccione un rango de fechas</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>

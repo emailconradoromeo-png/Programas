@@ -12,7 +12,7 @@ const InventoryMovement = sequelize.define('InventoryMovement', {
     allowNull: false,
   },
   tipo: {
-    type: DataTypes.ENUM('entrada', 'salida', 'ajuste'),
+    type: DataTypes.ENUM('entrada', 'salida', 'ajuste', 'devolucion'),
     allowNull: false,
   },
   cantidad: {
@@ -36,6 +36,10 @@ const InventoryMovement = sequelize.define('InventoryMovement', {
     allowNull: true,
   },
   sale_id: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+  },
+  return_id: {
     type: DataTypes.INTEGER,
     allowNull: true,
   },

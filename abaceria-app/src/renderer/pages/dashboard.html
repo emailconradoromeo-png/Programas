@@ -1,0 +1,47 @@
+<div id="dashboard-alerts"></div>
+
+<div class="cards-grid" id="dashboard-cards">
+  <div class="card">
+    <div class="card-label" data-i18n="dashboard.salesToday">Ventas Hoy</div>
+    <div class="card-value" id="card-ventas-hoy">--</div>
+  </div>
+  <div class="card">
+    <div class="card-label" data-i18n="dashboard.incomeToday">Ingresos Hoy</div>
+    <div class="card-value success" id="card-ingresos-hoy">--</div>
+  </div>
+  <div class="card">
+    <div class="card-label" data-i18n="dashboard.productsInStock">Productos en Stock</div>
+    <div class="card-value" id="card-productos-stock">--</div>
+  </div>
+  <div class="card">
+    <div class="card-label" data-i18n="dashboard.lowStock">Bajo Stock (&le;5)</div>
+    <div class="card-value warning" id="card-bajo-stock">--</div>
+  </div>
+  <div class="card">
+    <div class="card-label" data-i18n="returns.returnsToday">Devoluciones Hoy</div>
+    <div class="card-value" id="card-devoluciones-hoy">--</div>
+  </div>
+  <div class="card">
+    <div class="card-label" data-i18n="returns.refundsToday">Reembolsos Hoy</div>
+    <div class="card-value danger" id="card-reembolsos-hoy">--</div>
+  </div>
+</div>
+
+<div class="report-section">
+  <h3 data-i18n="dashboard.last5sales">Ultimas 5 ventas</h3>
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th data-i18n="table.id">#</th>
+          <th data-i18n="table.date">Fecha</th>
+          <th data-i18n="table.items">Items</th>
+          <th data-i18n="table.total">Total</th>
+        </tr>
+      </thead>
+      <tbody id="dashboard-last-sales">
+        <tr><td colspan="4" class="empty-state" data-i18n="dashboard.loading">Cargando...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
