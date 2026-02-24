@@ -8,12 +8,15 @@ import {
   PaperAirplaneIcon,
   ArrowPathIcon,
 } from '@heroicons/react/24/outline';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useSendMessage } from '@/hooks/useAI';
 import type { ChatMessage } from '@/types/ai';
 
 export default function ChatbotWidget() {
   const t = useTranslations('ai');
+  const { locale } = useParams<{ locale: string }>();
   const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
@@ -35,9 +38,6 @@ export default function ChatbotWidget() {
       inputRef.current?.focus();
     }
   }, [isOpen]);
-
-  // Don't render if not authenticated
-  if (!user) return null;
 
   const handleSend = () => {
     const trimmed = input.trim();
@@ -135,7 +135,25 @@ export default function ChatbotWidget() {
 
           {/* Messages */}
           <div className="flex-1 overflow-y-auto px-4 py-3">
-            {messages.length === 0 && (
+            {!user ? (
+              <div className="flex h-full flex-col items-center justify-center text-center">
+                <ChatBubbleBottomCenterTextIcon className="h-10 w-10 text-gray-300" />
+                <p className="mt-2 text-sm font-medium text-gray-500">
+                  {t('chat_welcome')}
+                </p>
+                <p className="mt-3 text-xs text-gray-400">
+                  {locale === 'es'
+                    ? 'Inicia sesion para chatear con nuestro asistente IA'
+                    : 'Connectez-vous pour discuter avec notre assistant IA'}
+                </p>
+                <Link
+                  href={`/${locale}/auth/login`}
+                  className="mt-4 rounded-full bg-blue-600 px-6 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                >
+                  {locale === 'es' ? 'Iniciar sesion' : 'Se connecter'}
+                </Link>
+              </div>
+            ) : messages.length === 0 ? (
               <div className="flex h-full flex-col items-center justify-center text-center">
                 <ChatBubbleBottomCenterTextIcon className="h-10 w-10 text-gray-300" />
                 <p className="mt-2 text-sm font-medium text-gray-500">
@@ -145,7 +163,7 @@ export default function ChatbotWidget() {
                   {t('chat_welcome_hint')}
                 </p>
               </div>
-            )}
+            ) : null}
 
             {messages.map((msg) => (
               <div
@@ -190,12 +208,12 @@ export default function ChatbotWidget() {
                 onKeyDown={handleKeyDown}
                 placeholder={t('chat_placeholder')}
                 className="flex-1 rounded-full border border-gray-300 px-4 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                disabled={sendMutation.isPending}
+                disabled={!user || sendMutation.isPending}
               />
               <button
                 type="button"
                 onClick={handleSend}
-                disabled={!input.trim() || sendMutation.isPending}
+                disabled={!user || !input.trim() || sendMutation.isPending}
                 className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 text-white transition-colors hover:bg-blue-700 disabled:bg-gray-300"
               >
                 <PaperAirplaneIcon className="h-4 w-4" />

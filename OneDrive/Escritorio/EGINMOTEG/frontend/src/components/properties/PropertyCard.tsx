@@ -48,7 +48,8 @@ export default function PropertyCard({
 
   const property = listing.property;
   const primaryImage = property.images?.find((img) => img.is_primary) ?? property.images?.[0];
-  const imageUrl = imgError || !primaryImage ? null : primaryImage.image;
+  const fallbackImage = (property as any).primary_image as string | undefined;
+  const imageUrl = imgError ? null : primaryImage?.image ?? fallbackImage ?? null;
 
   const categorySlug = (property as any).category_slug || property.category?.slug || '';
   const categoryName = (property as any).category_name || property.category?.name || '';
