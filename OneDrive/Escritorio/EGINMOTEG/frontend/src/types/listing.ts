@@ -3,7 +3,8 @@ import type { Property } from './property';
 export interface Listing {
   id: string;
   property: Property;
-  posted_by: { id: string; username: string };
+  posted_by: string | { id: string; username: string };
+  posted_by_username?: string;
   operation_type: 'venta' | 'alquiler' | 'alquiler_vacacional';
   price: number;
   currency: 'XAF' | 'EUR' | 'USD';
