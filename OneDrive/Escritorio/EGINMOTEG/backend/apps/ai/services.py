@@ -255,7 +255,7 @@ class RecommendationService:
 
 
 class ChatbotService:
-    """Servicio de chatbot asistente con OpenAI."""
+    """Servicio de chatbot asistente con OpenAI + fallback inteligente."""
 
     SYSTEM_PROMPT = (
         "Eres el asistente virtual de EGINMOTEG, la plataforma inmobiliaria "
@@ -268,20 +268,189 @@ class ChatbotService:
         "Puedes responder en español o francés según el idioma del usuario."
     )
 
+    # Base de conocimiento para el modo fallback
+    KNOWLEDGE_BASE = {
+        "ciudades": {
+            "malabo": (
+                "Malabo es la capital de Guinea Ecuatorial, ubicada en la isla de Bioko. "
+                "Es el centro económico y cultural del país con propiedades modernas y "
+                "vistas al mar. Las zonas más cotizadas son el centro urbano, Ela Nguema, "
+                "y las áreas cercanas al aeropuerto. Los precios varían entre 15-80 millones XAF "
+                "para apartamentos y 50-300 millones XAF para casas."
+            ),
+            "bata": (
+                "Bata es la ciudad más grande del continente en Guinea Ecuatorial, con un "
+                "mercado inmobiliario dinámico y en crecimiento. Las zonas residenciales "
+                "más populares incluyen el centro, Comandachina y las áreas costeras. "
+                "Los precios son generalmente más accesibles que en Malabo, con apartamentos "
+                "desde 10 millones XAF y casas desde 30 millones XAF."
+            ),
+            "oyala": (
+                "Oyala (Ciudad de la Paz) es la nueva capital planificada, ubicada en el "
+                "interior del continente. Ofrece infraestructura moderna y excelentes "
+                "oportunidades de inversión a largo plazo. Los precios de las propiedades "
+                "son competitivos y hay muchas opciones de obra nueva."
+            ),
+            "ebebiyin": (
+                "Ebebiyín está ubicada cerca de la frontera con Camerún y Gabón. "
+                "Es un importante centro comercial con propiedades accesibles. "
+                "Ideal para inversores que buscan oportunidades en zonas fronterizas "
+                "con actividad comercial internacional."
+            ),
+            "mongomo": (
+                "Mongomo es conocida por sus modernas infraestructuras deportivas "
+                "y gubernamentales. Ofrece propiedades residenciales de calidad "
+                "a precios razonables, con buenas conexiones por carretera."
+            ),
+        },
+        "operaciones": {
+            "compra": (
+                "Para comprar una propiedad en Guinea Ecuatorial te recomendamos:\n"
+                "1. Define tu presupuesto y la ciudad de interés\n"
+                "2. Usa nuestros filtros de búsqueda para encontrar propiedades\n"
+                "3. Contacta al propietario o agente directamente desde la plataforma\n"
+                "4. Visita la propiedad y negocia el precio\n"
+                "5. Asegúrate de verificar la documentación legal antes de firmar\n\n"
+                "En EGINMOTEG puedes filtrar por ciudad, precio, habitaciones y tipo."
+            ),
+            "alquiler": (
+                "Para alquilar una propiedad:\n"
+                "1. Busca propiedades con el filtro 'Alquiler' activado\n"
+                "2. Los precios de alquiler en Malabo van desde 200.000-2.000.000 XAF/mes\n"
+                "3. En Bata los alquileres son más económicos: 100.000-1.000.000 XAF/mes\n"
+                "4. Normalmente se pide un depósito de 1-3 meses\n"
+                "5. Contacta al propietario para coordinar una visita"
+            ),
+            "inversion": (
+                "Guinea Ecuatorial ofrece oportunidades de inversión inmobiliaria:\n"
+                "- Oyala: ciudad nueva con alto potencial de revalorización\n"
+                "- Malabo: demanda constante por ser la capital\n"
+                "- Bata: mercado en crecimiento con precios accesibles\n"
+                "- Alquiler vacacional: creciente sector turístico\n\n"
+                "Usa nuestra herramienta de valoración IA para estimar precios."
+            ),
+        },
+        "plataforma": {
+            "buscar": (
+                "Para buscar propiedades en EGINMOTEG:\n"
+                "- Usa la barra de búsqueda en la página principal\n"
+                "- Aplica filtros por ciudad, precio, habitaciones y tipo de operación\n"
+                "- Usa la vista de mapa para explorar por ubicación\n"
+                "- Guarda tus favoritos para recibir recomendaciones personalizadas"
+            ),
+            "cuenta": (
+                "Con tu cuenta en EGINMOTEG puedes:\n"
+                "- Publicar propiedades en venta o alquiler\n"
+                "- Guardar propiedades favoritas\n"
+                "- Enviar mensajes a propietarios y agentes\n"
+                "- Recibir recomendaciones personalizadas con IA\n"
+                "- Obtener valoraciones automáticas de propiedades"
+            ),
+            "valoracion": (
+                "Nuestra herramienta de valoración con IA analiza propiedades "
+                "similares en la misma zona para estimar un precio justo. "
+                "Ve a la página de detalle de cualquier propiedad y haz clic "
+                "en 'Solicitar valoración' en la barra lateral."
+            ),
+        },
+    }
+
+    GREETINGS = ["hola", "buenos dias", "buenas tardes", "buenas noches", "hey", "saludos", "bonjour", "salut", "bonsoir"]
+    FAREWELLS = ["adios", "bye", "hasta luego", "chao", "nos vemos", "au revoir", "a bientot"]
+
+    @staticmethod
+    def _fallback_response(user_message):
+        """Genera una respuesta inteligente sin OpenAI usando la base de conocimiento."""
+        msg = user_message.lower().strip()
+
+        # Saludos
+        if any(g in msg for g in ChatbotService.GREETINGS):
+            return (
+                "¡Hola! Soy el asistente virtual de EGINMOTEG. "
+                "Puedo ayudarte con información sobre:\n\n"
+                "- **Ciudades**: Malabo, Bata, Oyala, Ebebiyín, Mongomo\n"
+                "- **Compra y alquiler** de propiedades\n"
+                "- **Inversión** inmobiliaria en Guinea Ecuatorial\n"
+                "- **Cómo usar** la plataforma EGINMOTEG\n\n"
+                "¿En qué puedo ayudarte?"
+            )
+
+        # Despedidas
+        if any(f in msg for f in ChatbotService.FAREWELLS):
+            return (
+                "¡Hasta luego! Fue un placer ayudarte. "
+                "Si necesitas más información sobre propiedades en Guinea Ecuatorial, "
+                "no dudes en volver. ¡Buena suerte con tu búsqueda!"
+            )
+
+        # Ciudades
+        kb = ChatbotService.KNOWLEDGE_BASE
+        for city, info in kb["ciudades"].items():
+            if city in msg:
+                return info
+
+        # Operaciones
+        buy_words = ["comprar", "compra", "adquirir", "acheter", "achat"]
+        rent_words = ["alquilar", "alquiler", "rentar", "renta", "arrendar", "louer", "location"]
+        invest_words = ["invertir", "inversion", "inversión", "investir", "investissement", "negocio"]
+
+        if any(w in msg for w in buy_words):
+            return kb["operaciones"]["compra"]
+        if any(w in msg for w in rent_words):
+            return kb["operaciones"]["alquiler"]
+        if any(w in msg for w in invest_words):
+            return kb["operaciones"]["inversion"]
+
+        # Plataforma
+        search_words = ["buscar", "encontrar", "filtro", "filtros", "chercher", "rechercher"]
+        account_words = ["cuenta", "perfil", "registr", "publicar", "compte", "profil"]
+        valuation_words = ["valoracion", "valoración", "precio", "estimar", "cuanto vale", "évaluation", "prix"]
+
+        if any(w in msg for w in search_words):
+            return kb["plataforma"]["buscar"]
+        if any(w in msg for w in account_words):
+            return kb["plataforma"]["cuenta"]
+        if any(w in msg for w in valuation_words):
+            return kb["plataforma"]["valoracion"]
+
+        # Precios
+        if "precio" in msg or "cuanto" in msg or "cuesta" in msg or "prix" in msg or "combien" in msg:
+            return (
+                "Los precios de propiedades en Guinea Ecuatorial varían según la ciudad:\n\n"
+                "**Malabo** (capital):\n"
+                "- Apartamentos: 15-80 millones XAF\n"
+                "- Casas: 50-300 millones XAF\n"
+                "- Alquiler: 200.000-2.000.000 XAF/mes\n\n"
+                "**Bata**:\n"
+                "- Apartamentos: 10-50 millones XAF\n"
+                "- Casas: 30-150 millones XAF\n"
+                "- Alquiler: 100.000-1.000.000 XAF/mes\n\n"
+                "**Oyala**: Precios competitivos con mucha obra nueva.\n\n"
+                "Para un precio más preciso, usa nuestra herramienta de valoración IA "
+                "en la página de detalle de cualquier propiedad."
+            )
+
+        # Respuesta genérica
+        return (
+            "Gracias por tu mensaje. Como asistente de EGINMOTEG, "
+            "puedo ayudarte con:\n\n"
+            "- Información sobre **ciudades** de Guinea Ecuatorial "
+            "(Malabo, Bata, Oyala, Ebebiyín, Mongomo)\n"
+            "- Consejos para **comprar o alquilar** propiedades\n"
+            "- **Precios** y tendencias del mercado inmobiliario\n"
+            "- Cómo **usar la plataforma** (buscar, publicar, valorar)\n"
+            "- Oportunidades de **inversión** inmobiliaria\n\n"
+            "Prueba a preguntarme algo como: \"¿Qué zonas recomiendas en Malabo?\" "
+            "o \"¿Cuánto cuesta alquilar en Bata?\""
+        )
+
     @staticmethod
     def get_response(session, user_message):
         """
-        Envía un mensaje al chatbot y obtiene una respuesta.
+        Envía un mensaje al chatbot. Usa OpenAI si está disponible,
+        si no, usa el modo fallback con base de conocimiento local.
         """
         from .models import ChatMessage
-
-        try:
-            from openai import OpenAI
-
-            client = OpenAI(api_key=getattr(settings, "OPENAI_API_KEY", ""))
-        except Exception as e:
-            logger.error("Error inicializando OpenAI: %s", e)
-            return "Lo siento, el servicio de chat no está disponible en este momento."
 
         # Guardar mensaje del usuario
         ChatMessage.objects.create(
@@ -290,57 +459,61 @@ class ChatbotService:
             content=user_message,
         )
 
-        # Construir historial de mensajes
-        messages = [{"role": "system", "content": ChatbotService.SYSTEM_PROMPT}]
+        # Intentar con OpenAI primero
+        api_key = getattr(settings, "OPENAI_API_KEY", "")
+        assistant_content = None
 
-        # Agregar contexto de la sesión si existe
-        if session.context:
-            context_msg = f"Contexto del usuario: {session.context}"
-            messages.append({"role": "system", "content": context_msg})
+        if api_key:
+            try:
+                from openai import OpenAI
 
-        # Agregar mensajes previos (últimos 20)
-        previous = ChatMessage.objects.filter(session=session).order_by("created_at")[
-            :20
-        ]
-        for msg in previous:
-            if msg.role in ("user", "assistant"):
-                messages.append({"role": msg.role, "content": msg.content})
+                client = OpenAI(api_key=api_key)
 
-        try:
-            response = client.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=messages,
-                max_tokens=1000,
-                temperature=0.7,
-            )
-            assistant_content = response.choices[0].message.content
+                # Construir historial de mensajes
+                messages = [{"role": "system", "content": ChatbotService.SYSTEM_PROMPT}]
 
-            # Guardar respuesta del asistente
-            ChatMessage.objects.create(
-                session=session,
-                role="assistant",
-                content=assistant_content,
-            )
+                if session.context:
+                    context_msg = f"Contexto del usuario: {session.context}"
+                    messages.append({"role": "system", "content": context_msg})
 
-            # Actualizar título de la sesión si es el primer mensaje
-            if not session.title and user_message:
-                session.title = user_message[:100]
-                session.save(update_fields=["title"])
+                previous = ChatMessage.objects.filter(session=session).order_by(
+                    "created_at"
+                )[:20]
+                for msg in previous:
+                    if msg.role in ("user", "assistant"):
+                        messages.append({"role": msg.role, "content": msg.content})
 
-            return assistant_content
+                response = client.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=messages,
+                    max_tokens=1000,
+                    temperature=0.7,
+                )
+                assistant_content = response.choices[0].message.content
+                logger.info("Respuesta generada con OpenAI para sesión %s", session.id)
 
-        except Exception as e:
-            logger.error("Error en OpenAI chat: %s", e)
-            error_msg = (
-                "Lo siento, hubo un error al procesar tu mensaje. "
-                "Por favor, inténtalo de nuevo más tarde."
-            )
-            ChatMessage.objects.create(
-                session=session,
-                role="assistant",
-                content=error_msg,
-            )
-            return error_msg
+            except Exception as e:
+                logger.warning("OpenAI no disponible, usando fallback: %s", e)
+                assistant_content = None
+
+        # Fallback si OpenAI falla o no está configurado
+        if assistant_content is None:
+            assistant_content = ChatbotService._fallback_response(user_message)
+            logger.info("Respuesta generada con fallback para sesión %s", session.id)
+
+        # Guardar respuesta del asistente
+        ChatMessage.objects.create(
+            session=session,
+            role="assistant",
+            content=assistant_content,
+        )
+
+        # Actualizar título de la sesión si es el primer mensaje
+        if not session.title and user_message:
+            session.title = user_message[:100]
+            session.save(update_fields=["title"])
+
+        return assistant_content
 
 
 class ImageAnalysisService:
