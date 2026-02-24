@@ -28,6 +28,9 @@ import ImageAnalysisPanel from '@/components/ai/ImageAnalysisPanel';
 import RecommendationGrid from '@/components/ai/RecommendationGrid';
 import { useProperty } from '@/hooks/useProperties';
 import { formatCurrency } from '@/lib/currency';
+import type { FieldSchemaEntry } from '@/types/property';
+
+const NON_PROPERTY_SLUGS = ['negocio', 'agencia-inmobiliaria', 'hotel'];
 
 const operationBadgeVariant: Record<string, 'info' | 'success' | 'warning'> = {
   venta: 'info',
@@ -40,6 +43,40 @@ const operationLabels: Record<string, string> = {
   alquiler: 'Alquiler',
   alquiler_vacacional: 'Vacacional',
 };
+
+function renderStars(rating: string | number) {
+  const n = Number(rating);
+  if (!n || n < 1 || n > 5) return String(rating);
+  return '★'.repeat(n) + '☆'.repeat(5 - n);
+}
+
+function formatExtraValue(
+  key: string,
+  value: any,
+  fieldSchema?: FieldSchemaEntry
+): React.ReactNode {
+  if (Array.isArray(value)) {
+    return (
+      <ul className="mt-0.5 flex flex-wrap gap-1.5">
+        {value.map((v) => (
+          <li
+            key={v}
+            className="rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700"
+          >
+            {String(v).charAt(0).toUpperCase() + String(v).slice(1).replace(/_/g, ' ')}
+          </li>
+        ))}
+      </ul>
+    );
+  }
+  if (key === 'star_rating') {
+    return <span className="text-amber-500">{renderStars(value)}</span>;
+  }
+  if (typeof value === 'boolean') {
+    return value ? 'Si' : 'No';
+  }
+  return String(value).charAt(0).toUpperCase() + String(value).slice(1).replace(/_/g, ' ');
+}
 
 export default function PropertyDetailPage() {
   const t = useTranslations('properties');
@@ -89,6 +126,14 @@ export default function PropertyDetailPage() {
   const property = listing.property;
   const images = property.images ?? [];
   const currentImage = images[selectedImageIndex];
+
+  const categorySlug = property.category?.slug || '';
+  const categoryName = property.category?.name || '';
+  const fieldsSchema: Record<string, FieldSchemaEntry> =
+    (property.category?.fields_schema as Record<string, FieldSchemaEntry>) || {};
+  const isTraditionalProperty = !NON_PROPERTY_SLUGS.includes(categorySlug);
+  const extra = property.extra_attributes || {};
+  const hasExtra = Object.keys(extra).length > 0;
 
   const handlePrevImage = () => {
     setSelectedImageIndex((prev) =>
@@ -301,38 +346,65 @@ export default function PropertyDetailPage() {
               </div>
 
               {/* Category */}
-              {property.category?.name && (
+              {categoryName && (
                 <p className="mt-2 text-sm text-gray-500">
-                  Categoria: {property.category.name}
+                  Categoria: {categoryName}
                 </p>
               )}
             </div>
 
-            {/* Key features grid */}
-            <div className="mt-6 rounded-lg bg-white p-6 shadow-sm">
-              <h2 className="text-lg font-semibold text-gray-900">
-                Caracteristicas principales
-              </h2>
-              <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-5">
-                {featureItems.map(
-                  (item) =>
-                    item.value != null && (
-                      <div
-                        key={item.label}
-                        className="rounded-lg border border-gray-100 bg-gray-50 p-3 text-center"
-                      >
-                        <p className="text-2xl font-bold text-blue-600">
-                          {item.value}
-                          {item.suffix}
-                        </p>
-                        <p className="mt-1 text-xs font-medium text-gray-500">
-                          {item.label}
-                        </p>
-                      </div>
-                    )
-                )}
+            {/* Key features grid - only for traditional properties */}
+            {isTraditionalProperty && (
+              <div className="mt-6 rounded-lg bg-white p-6 shadow-sm">
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Caracteristicas principales
+                </h2>
+                <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-5">
+                  {featureItems.map(
+                    (item) =>
+                      item.value != null && (
+                        <div
+                          key={item.label}
+                          className="rounded-lg border border-gray-100 bg-gray-50 p-3 text-center"
+                        >
+                          <p className="text-2xl font-bold text-blue-600">
+                            {item.value}
+                            {item.suffix}
+                          </p>
+                          <p className="mt-1 text-xs font-medium text-gray-500">
+                            {item.label}
+                          </p>
+                        </div>
+                      )
+                  )}
+                </div>
               </div>
-            </div>
+            )}
+
+            {/* Category-specific details (extra_attributes) */}
+            {hasExtra && (
+              <div className="mt-6 rounded-lg bg-white p-6 shadow-sm">
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Detalles de {categoryName || 'la propiedad'}
+                </h2>
+                <dl className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  {Object.entries(extra).map(([key, value]) => {
+                    const schema = fieldsSchema[key];
+                    const label = schema?.label || key.replace(/_/g, ' ');
+                    return (
+                      <div key={key}>
+                        <dt className="text-xs font-medium capitalize text-gray-500">
+                          {label}
+                        </dt>
+                        <dd className="mt-0.5 text-sm font-medium text-gray-900">
+                          {formatExtraValue(key, value, schema)}
+                        </dd>
+                      </div>
+                    );
+                  })}
+                </dl>
+              </div>
+            )}
 
             {/* Full description */}
             <div className="mt-6 rounded-lg bg-white p-6 shadow-sm">
@@ -343,34 +415,6 @@ export default function PropertyDetailPage() {
                 {property.description || 'Sin descripcion disponible.'}
               </div>
             </div>
-
-            {/* Extra attributes */}
-            {property.extra_attributes &&
-              Object.keys(property.extra_attributes).length > 0 && (
-                <div className="mt-6 rounded-lg bg-white p-6 shadow-sm">
-                  <h2 className="text-lg font-semibold text-gray-900">
-                    Atributos adicionales
-                  </h2>
-                  <dl className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3">
-                    {Object.entries(property.extra_attributes).map(
-                      ([key, value]) => (
-                        <div key={key}>
-                          <dt className="text-xs font-medium capitalize text-gray-500">
-                            {key.replace(/_/g, ' ')}
-                          </dt>
-                          <dd className="mt-0.5 text-sm font-medium text-gray-900">
-                            {typeof value === 'boolean'
-                              ? value
-                                ? 'Si'
-                                : 'No'
-                              : String(value)}
-                          </dd>
-                        </div>
-                      )
-                    )}
-                  </dl>
-                </div>
-              )}
 
             {/* Map placeholder */}
             <div className="mt-6 rounded-lg bg-white p-6 shadow-sm">
@@ -414,13 +458,13 @@ export default function PropertyDetailPage() {
                 <div className="text-center">
                   {/* Avatar */}
                   <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-blue-100 text-xl font-bold text-blue-600">
-                    {property.owner.first_name?.charAt(0) ||
-                      property.owner.username.charAt(0).toUpperCase()}
+                    {property.owner?.first_name?.charAt(0) ||
+                      (listing.posted_by_username || 'U').charAt(0).toUpperCase()}
                   </div>
                   <h3 className="mt-3 text-base font-semibold text-gray-900">
-                    {property.owner.first_name && property.owner.last_name
+                    {property.owner?.first_name && property.owner?.last_name
                       ? `${property.owner.first_name} ${property.owner.last_name}`
-                      : property.owner.username}
+                      : listing.posted_by_username || 'Usuario'}
                   </h3>
                   <p className="mt-0.5 text-xs text-gray-500">Propietario</p>
                 </div>
@@ -434,7 +478,7 @@ export default function PropertyDetailPage() {
                     onClick={() => setShowPhone(!showPhone)}
                   >
                     <PhoneIcon className="mr-2 h-4 w-4" />
-                    {showPhone && property.owner.phone
+                    {showPhone && property.owner?.phone
                       ? property.owner.phone
                       : t('contact_owner')}
                   </Button>
@@ -483,7 +527,7 @@ export default function PropertyDetailPage() {
               </div>
 
               {/* AI Valuation */}
-              <ValuationCard propertyId={id} />
+              <ValuationCard propertyId={property.id} />
 
               {/* Listing metadata */}
               <Card>
