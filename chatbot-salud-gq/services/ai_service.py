@@ -1,6 +1,7 @@
 """
 Servicio de IA: Genera respuestas médicas inteligentes usando OpenAI.
 Integra la base de conocimiento local con la capacidad de GPT.
+Registra TODAS las interacciones para aprendizaje continuo.
 """
 
 import logging
@@ -24,46 +25,120 @@ from services.knowledge_memory import KnowledgeMemory
 
 logger = logging.getLogger(__name__)
 
+# Palabras clave para detección de categoría
+CATEGORIAS_KEYWORDS = {
+    "centros_salud": [
+        "centro", "hospital", "clínica", "clinica", "doctor", "médico", "medico",
+        "malabo", "bata", "ebebiyin", "mongomo", "evinayong", "luba", "aconibe",
+        "annobon", "annobón", "farmacia",
+    ],
+    "sintomas": [
+        "fiebre", "dolor", "tos", "diarrea", "vomito", "vómito", "sangre",
+        "mareo", "picazón", "hinchado", "herida", "nausea", "náusea",
+        "cansancio", "debilidad", "efie", "a yem", "ekos", "nsus", "meyon", "evu",
+    ],
+    "enfermedad": [
+        "malaria", "paludismo", "tifoidea", "dengue", "vih", "sida", "tuberculosis",
+        "colera", "cólera", "hepatitis", "parasit", "anemia", "diabetes",
+        "hipertension", "hipertensión", "asma", "neumonia", "neumonía",
+    ],
+    "emergencia": [
+        "emergencia", "urgente", "urgencia", "me muero", "no respira",
+        "convulsiones", "desmayo", "inconsciente", "accidente",
+        "envenenamiento", "veneno", "mordedura", "serpiente",
+        "quemadura", "ahogando", "parto",
+    ],
+    "prevencion": [
+        "prevenir", "prevencion", "prevención", "vacuna", "proteger",
+        "mosquitero", "repelente", "higiene", "agua potable", "lavarse",
+    ],
+}
+
 
 class AIService:
     """Servicio de inteligencia artificial para el chatbot médico."""
 
-    def __init__(self):
+    def __init__(self, memory=None):
         self.client = None
         if OPENAI_API_KEY:
             self.client = OpenAI(api_key=OPENAI_API_KEY)
         self.conversation_history = {}
-        self.memory = KnowledgeMemory()
+        self.memory = memory or KnowledgeMemory()
 
     def generar_respuesta(self, user_id, mensaje, idioma="es"):
         """
         Genera una respuesta médica inteligente.
-        Primero busca en la base de conocimiento local,
-        luego complementa con la IA si es necesario.
+        Registra TODAS las interacciones para aprendizaje.
         """
         mensaje_lower = mensaje.lower().strip()
+        categoria = self._detectar_categoria(mensaje_lower)
 
-        # Detectar emergencias
+        # 1. Detectar emergencias
         if self._es_emergencia(mensaje_lower):
-            return self._respuesta_emergencia(idioma)
+            respuesta = self._respuesta_emergencia(idioma)
+            self._post_procesar(user_id, mensaje, respuesta, "emergencia", idioma, "emergencia")
+            return respuesta
 
-        # Buscar en base de conocimiento local primero
+        # 2. Buscar en base de conocimiento local
         respuesta_local = self._buscar_local(mensaje_lower, idioma)
         if respuesta_local:
+            self._post_procesar(user_id, mensaje, respuesta_local, "local", idioma, categoria)
             return respuesta_local
 
-        # Buscar en memoria aprendida
+        # 3. Buscar en memoria aprendida
         respuesta_memoria, confianza = self.memory.buscar(mensaje_lower, idioma)
         if respuesta_memoria and confianza >= 0.6:
             logger.info(f"Respuesta desde memoria (confianza: {confianza:.2f})")
+            self._post_procesar(user_id, mensaje, respuesta_memoria, "memoria", idioma, categoria)
             return respuesta_memoria
 
-        # Si hay API de OpenAI, usar IA para respuestas más complejas
-        if self.client:
-            return self._respuesta_ia(user_id, mensaje, idioma)
+        # 4. Buscar en patrones aprendidos
+        respuesta_patron, frecuencia, confianza_patron = self.memory.buscar_patron(mensaje_lower, idioma)
+        if respuesta_patron and confianza_patron >= 0.6:
+            logger.info(f"Respuesta desde patrón (freq={frecuencia}, confianza: {confianza_patron:.2f})")
+            self._post_procesar(user_id, mensaje, respuesta_patron, "patron", idioma, categoria)
+            return respuesta_patron
 
-        # Fallback sin IA
-        return self._respuesta_fallback(mensaje_lower, idioma)
+        # 5. Si hay API de OpenAI, usar IA
+        if self.client:
+            respuesta_ia = self._respuesta_ia(user_id, mensaje, idioma)
+            self._post_procesar(user_id, mensaje, respuesta_ia, "openai", idioma, categoria)
+            return respuesta_ia
+
+        # 6. Fallback sin IA
+        respuesta_fb = self._respuesta_fallback(mensaje_lower, idioma)
+        self._post_procesar(user_id, mensaje, respuesta_fb, "fallback", idioma, categoria)
+        return respuesta_fb
+
+    def _post_procesar(self, user_id, pregunta, respuesta, fuente, idioma, categoria):
+        """
+        Post-procesamiento: registra en historial, guarda conocimiento,
+        actualiza patrones y perfil del usuario.
+        """
+        try:
+            # 1. Siempre registrar en historial
+            self.memory.registrar_consulta(user_id, pregunta, respuesta, fuente, idioma, categoria)
+
+            # 2. Guardar en conocimiento aprendido si es respuesta útil
+            if fuente in ("local", "openai"):
+                self.memory.guardar(pregunta, respuesta, idioma, categoria)
+
+            # 3. Actualizar patrones aprendidos
+            if fuente in ("local", "openai", "memoria"):
+                self.memory.actualizar_patron(pregunta, respuesta, idioma, categoria)
+
+            # 4. Actualizar perfil del usuario
+            self.memory.actualizar_perfil(user_id, idioma, categoria)
+
+        except Exception as e:
+            logger.error(f"Error en post-procesamiento: {e}")
+
+    def _detectar_categoria(self, mensaje):
+        """Detecta la categoría del mensaje basándose en palabras clave."""
+        for categoria, keywords in CATEGORIAS_KEYWORDS.items():
+            if any(kw in mensaje for kw in keywords):
+                return categoria
+        return "general"
 
     def _es_emergencia(self, mensaje):
         """Detecta si el mensaje describe una emergencia médica."""
@@ -233,7 +308,7 @@ class AIService:
         return texto
 
     def _respuesta_ia(self, user_id, mensaje, idioma):
-        """Genera respuesta usando OpenAI con contexto médico de GQ."""
+        """Genera respuesta usando OpenAI con contexto médico enriquecido."""
         if user_id not in self.conversation_history:
             self.conversation_history[user_id] = []
 
@@ -246,8 +321,8 @@ class AIService:
 
         context = self._construir_contexto(mensaje)
 
-        # Agregar contexto de memoria aprendida
-        contexto_memoria = self.memory.obtener_contexto_para_ia(mensaje)
+        # Contexto enriquecido: memoria + patrones + historial + tendencias
+        contexto_enriquecido = self.memory.obtener_contexto_enriquecido(mensaje, user_id)
 
         messages = [
             {"role": "system", "content": SYSTEM_PROMPT + "\n\n" + idioma_instruccion},
@@ -259,10 +334,10 @@ class AIService:
                 "content": f"Contexto relevante de la base de datos local:\n{context}",
             })
 
-        if contexto_memoria:
+        if contexto_enriquecido:
             messages.append({
                 "role": "system",
-                "content": f"Conocimiento aprendido de consultas anteriores:\n{contexto_memoria}",
+                "content": f"Conocimiento aprendido y contexto del usuario:\n{contexto_enriquecido}",
             })
 
         history = self.conversation_history[user_id][-6:]
@@ -290,9 +365,6 @@ class AIService:
                 self.conversation_history[user_id] = (
                     self.conversation_history[user_id][-12:]
                 )
-
-            # Guardar en memoria para futuras consultas
-            self.memory.guardar(mensaje, respuesta, idioma)
 
             return respuesta
 

@@ -19,11 +19,11 @@ from config.settings import (
     FLASK_PORT,
     FLASK_DEBUG,
     SECRET_KEY,
-    WHATSAPP_VERIFY_TOKEN,
-    WHATSAPP_BOT_NUMBER,
+    GREEN_API_INSTANCE_ID,
     LOG_LEVEL,
     LOG_FILE,
 )
+from services.knowledge_memory import KnowledgeMemory
 from services.ai_service import AIService
 from services.whatsapp_service import WhatsAppService
 from services.session_manager import SessionManager
@@ -46,9 +46,10 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 app.secret_key = SECRET_KEY
 
-ai_service = AIService()
+memory = KnowledgeMemory()
+ai_service = AIService(memory=memory)
 whatsapp_service = WhatsAppService()
-session_manager = SessionManager()
+session_manager = SessionManager(memory=memory)
 
 
 # ==================== Procesador de mensajes ====================
@@ -72,40 +73,51 @@ def procesar_mensaje(telefono, texto, tipo_mensaje="text"):
             f"{obtener_frase('saludo', idioma)}\n\n"
             f"{obtener_frase('menu_principal', idioma)}"
         )
+        memory.registrar_consulta(telefono, texto, bienvenida, "menu", idioma, "bienvenida")
         return bienvenida
 
     # === Comandos de navegación ===
     if texto_lower in ("menu", "menú", "inicio", "ayuda", "help", "hola", "hi"):
-        return obtener_frase("menu_principal", idioma)
+        respuesta_menu = obtener_frase("menu_principal", idioma)
+        memory.registrar_consulta(telefono, texto, respuesta_menu, "menu", idioma, "menu")
+        return respuesta_menu
 
     # Cambio de idioma
     if texto_lower in ("fang", "lengua fang", "en fang", "habla fang", "fang language"):
         session_manager.actualizar_idioma(telefono, "fang")
-        return (
+        respuesta_idioma = (
             obtener_frase("cambio_idioma_fang", "fang")
             + "\n\n"
             + obtener_frase("menu_principal", "fang")
         )
+        memory.registrar_consulta(telefono, texto, respuesta_idioma, "menu", "fang", "idioma")
+        return respuesta_idioma
 
     if texto_lower in (
         "español", "espanol", "castellano", "en español",
         "habla español", "spanish",
     ):
         session_manager.actualizar_idioma(telefono, "es")
-        return (
+        respuesta_idioma = (
             obtener_frase("cambio_idioma_es", "es")
             + "\n\n"
             + obtener_frase("menu_principal", "es")
         )
+        memory.registrar_consulta(telefono, texto, respuesta_idioma, "menu", "es", "idioma")
+        return respuesta_idioma
 
     # === Opciones del menú por número ===
     if texto_lower == "1" or texto_lower == "sintomas" or texto_lower == "síntomas":
         session_manager.actualizar_estado(telefono, "esperando_sintomas")
-        return obtener_frase("pregunta_sintomas", idioma)
+        respuesta_sintomas = obtener_frase("pregunta_sintomas", idioma)
+        memory.registrar_consulta(telefono, texto, respuesta_sintomas, "menu", idioma, "sintomas")
+        return respuesta_sintomas
 
     if texto_lower == "2" or texto_lower == "centros" or texto_lower == "hospital":
         session_manager.actualizar_estado(telefono, "esperando_ubicacion")
-        return obtener_frase("pidiendo_ubicacion", idioma)
+        respuesta_centros = obtener_frase("pidiendo_ubicacion", idioma)
+        memory.registrar_consulta(telefono, texto, respuesta_centros, "menu", idioma, "centros_salud")
+        return respuesta_centros
 
     if texto_lower == "3" or texto_lower == "enfermedades" or texto_lower == "lista":
         lista = listar_enfermedades()
@@ -115,14 +127,18 @@ def procesar_mensaje(telefono, texto, tipo_mensaje="text"):
         else:
             encabezado = "*Enfermedades comunes en Guinea Ecuatorial:*\n\n"
             pie = "\n\nEscribe el nombre de la enfermedad para más información."
-        return encabezado + lista + pie
+        respuesta_enf = encabezado + lista + pie
+        memory.registrar_consulta(telefono, texto, respuesta_enf, "menu", idioma, "enfermedad")
+        return respuesta_enf
 
     if texto_lower == "4" or texto_lower == "emergencia" or texto_lower == "emergencias":
-        return formatear_emergencias()
+        respuesta_emerg = formatear_emergencias()
+        memory.registrar_consulta(telefono, texto, respuesta_emerg, "menu", idioma, "emergencia")
+        return respuesta_emerg
 
     if texto_lower == "5" or texto_lower == "idioma":
         if idioma == "es":
-            return (
+            respuesta_idioma_menu = (
                 "Selecciona tu idioma:\n\n"
                 "- Escribe *español* para continuar en español\n"
                 "- Escribe *fang* para cambiar a fang\n\n"
@@ -131,7 +147,7 @@ def procesar_mensaje(telefono, texto, tipo_mensaje="text"):
                 "- Write *fang* for Fang language"
             )
         else:
-            return (
+            respuesta_idioma_menu = (
                 "Yia idioma ya wo:\n\n"
                 "- Fila *español* a ke español\n"
                 "- Fila *fang* a ke fang\n\n"
@@ -139,23 +155,28 @@ def procesar_mensaje(telefono, texto, tipo_mensaje="text"):
                 "- Escribe *español* para español\n"
                 "- Escribe *fang* para fang"
             )
+        memory.registrar_consulta(telefono, texto, respuesta_idioma_menu, "menu", idioma, "idioma")
+        return respuesta_idioma_menu
 
     if texto_lower == "6" or texto_lower == "primeros auxilios":
         if idioma == "fang":
-            return (
+            respuesta_pa = (
                 "*Primeros auxilios básicos:*\n\n"
                 "*Efie (Fiebre):*\n"
                 + obtener_frase("primeros_auxilios_fiebre", "fang")
                 + "\n\n*Nsus nnam (Diarrea):*\n"
                 + obtener_frase("primeros_auxilios_diarrea", "fang")
             )
-        return (
-            "*Primeros auxilios básicos:*\n\n"
-            "*Fiebre:*\n"
-            + obtener_frase("primeros_auxilios_fiebre", "es")
-            + "\n\n*Diarrea:*\n"
-            + obtener_frase("primeros_auxilios_diarrea", "es")
-        )
+        else:
+            respuesta_pa = (
+                "*Primeros auxilios básicos:*\n\n"
+                "*Fiebre:*\n"
+                + obtener_frase("primeros_auxilios_fiebre", "es")
+                + "\n\n*Diarrea:*\n"
+                + obtener_frase("primeros_auxilios_diarrea", "es")
+            )
+        memory.registrar_consulta(telefono, texto, respuesta_pa, "menu", idioma, "primeros_auxilios")
+        return respuesta_pa
 
     # === Consejos periódicos ===
     if sesion["mensajes_count"] % 5 == 0:
@@ -170,7 +191,9 @@ def procesar_mensaje(telefono, texto, tipo_mensaje="text"):
         "gracias", "adios", "adiós", "chao", "bye",
         "hasta luego", "akeva", "mbolo",
     ):
-        return obtener_frase("despedida", idioma)
+        respuesta_despedida = obtener_frase("despedida", idioma)
+        memory.registrar_consulta(telefono, texto, respuesta_despedida, "menu", idioma, "despedida")
+        return respuesta_despedida
 
     # === Consulta a la IA para todo lo demás ===
     respuesta = ai_service.generar_respuesta(telefono, texto, idioma)
@@ -185,7 +208,7 @@ def index():
         "status": "active",
         "service": "Chatbot Médico Guinea Ecuatorial",
         "version": "1.0.0",
-        "whatsapp": WHATSAPP_BOT_NUMBER,
+        "whatsapp": "Green API",
         "languages": ["español", "fang"],
         "description": (
             "Asistente de salud bilingüe para Guinea Ecuatorial "
@@ -197,26 +220,18 @@ def index():
 @app.route("/webhook", methods=["GET"])
 def verificar_webhook():
     """
-    Verificación del webhook de WhatsApp (Meta Cloud API).
-    Meta envía un GET para verificar que el endpoint es válido.
+    Verificación del webhook (Green API).
+    Devuelve 200 para confirmar que el endpoint está activo.
     """
-    mode = request.args.get("hub.mode", "")
-    token = request.args.get("hub.verify_token", "")
-    challenge = request.args.get("hub.challenge", "")
-
-    if mode == "subscribe" and token == WHATSAPP_VERIFY_TOKEN:
-        logger.info("Webhook verificado correctamente")
-        return challenge, 200
-
-    logger.warning("Verificación de webhook fallida")
-    return "Forbidden", 403
+    logger.info("Webhook verificado correctamente")
+    return "OK", 200
 
 
 @app.route("/webhook", methods=["POST"])
 def recibir_mensaje():
     """
-    Recibe mensajes de WhatsApp via webhook.
-    Procesa el mensaje y envía la respuesta.
+    Recibe mensajes de WhatsApp via webhook de Green API.
+    Green API envía JSON con la estructura de notificación.
     """
     try:
         data = request.get_json()
@@ -238,7 +253,7 @@ def recibir_mensaje():
         logger.info(f"Mensaje recibido de {telefono}: {texto[:50]}...")
 
         # Marcar como leído
-        whatsapp_service.marcar_como_leido(message_id)
+        whatsapp_service.marcar_como_leido(telefono, message_id)
 
         # No procesar mensajes no soportados
         if tipo == "unsupported":
@@ -720,6 +735,17 @@ def api_chat():
         return jsonify({"error": str(e)}), 500
 
 
+@app.route("/api/stats", methods=["GET"])
+def api_stats():
+    """Endpoint para ver estadísticas del sistema de aprendizaje."""
+    try:
+        stats = memory.obtener_estadisticas()
+        return jsonify({"status": "ok", "estadisticas": stats})
+    except Exception as e:
+        logger.error(f"Error en API stats: {e}", exc_info=True)
+        return jsonify({"error": str(e)}), 500
+
+
 # ==================== Punto de entrada ====================
 if __name__ == "__main__":
     # Crear directorio data/ para la base de datos de memoria
@@ -728,9 +754,11 @@ if __name__ == "__main__":
     logger.info("=" * 60)
     logger.info("Iniciando Chatbot Médico de Guinea Ecuatorial")
     logger.info(f"Servidor: {FLASK_HOST}:{FLASK_PORT}")
-    logger.info(f"WhatsApp: {WHATSAPP_BOT_NUMBER}")
+    logger.info(f"WhatsApp via Green API (Instance: {GREEN_API_INSTANCE_ID})")
     logger.info("Idiomas: Español, Fang")
     logger.info("Sistema de memoria aprendida: ACTIVO")
+    logger.info("Sistema de aprendizaje completo: ACTIVO")
+    logger.info("Endpoint de estadísticas: /api/stats")
     logger.info("=" * 60)
 
     app.run(

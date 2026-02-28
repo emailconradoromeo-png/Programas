@@ -1,6 +1,7 @@
 """
 Gestor de sesiones de usuario.
 Mantiene el estado de la conversación y las preferencias de idioma.
+Persiste perfiles de usuario en la base de datos para sobrevivir reinicios.
 """
 
 import time
@@ -13,8 +14,9 @@ logger = logging.getLogger(__name__)
 class SessionManager:
     """Gestiona las sesiones de conversación de cada usuario."""
 
-    def __init__(self):
+    def __init__(self, memory=None):
         self.sessions = {}
+        self.memory = memory
 
     def obtener_sesion(self, user_id):
         """Obtiene o crea una sesión para el usuario."""
@@ -35,21 +37,39 @@ class SessionManager:
         return self.sessions[user_id]
 
     def _crear_sesion(self, user_id):
-        """Crea una nueva sesión."""
+        """Crea una nueva sesión, cargando perfil persistente si existe."""
+        idioma = "es"
+        primera_vez = user_id not in self.sessions
+        mensajes_count = 0
+
+        # Cargar perfil persistente desde la BD
+        if self.memory:
+            perfil = self.memory.obtener_perfil(user_id)
+            if perfil:
+                idioma = perfil["idioma_preferido"]
+                mensajes_count = perfil["total_mensajes"]
+                # Si ya tiene mensajes previos, no es primera vez
+                if mensajes_count > 0:
+                    primera_vez = False
+
         self.sessions[user_id] = {
-            "idioma": "es",
+            "idioma": idioma,
             "estado": "inicio",
             "contexto": {},
             "ultimo_mensaje": time.time(),
-            "mensajes_count": 0,
-            "primera_vez": user_id not in self.sessions,
+            "mensajes_count": mensajes_count,
+            "primera_vez": primera_vez,
         }
 
     def actualizar_idioma(self, user_id, idioma):
-        """Cambia el idioma preferido del usuario."""
+        """Cambia el idioma preferido del usuario y persiste en BD."""
         sesion = self.obtener_sesion(user_id)
         sesion["idioma"] = idioma
         logger.info(f"Idioma cambiado a {idioma} para {user_id}")
+
+        # Persistir en BD
+        if self.memory:
+            self.memory.actualizar_perfil(user_id, idioma=idioma)
 
     def actualizar_estado(self, user_id, estado, contexto=None):
         """Actualiza el estado de la conversación."""
