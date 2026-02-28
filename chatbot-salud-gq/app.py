@@ -30,6 +30,9 @@ from services.session_manager import SessionManager
 from knowledge.idioma_fang import obtener_frase, obtener_saludo
 from knowledge.enfermedades import listar_enfermedades
 from knowledge.centros_salud import formatear_emergencias, listar_regiones
+from knowledge.constitucion_gq import formatear_resumen_constitucion
+from knowledge.ohada import formatear_resumen_ohada
+from knowledge.historia_gq import formatear_resumen_historia
 
 # ==================== Configuración de logging ====================
 logging.basicConfig(
@@ -177,6 +180,21 @@ def procesar_mensaje(telefono, texto, tipo_mensaje="text"):
             )
         memory.registrar_consulta(telefono, texto, respuesta_pa, "menu", idioma, "primeros_auxilios")
         return respuesta_pa
+
+    if texto_lower == "7" or texto_lower == "constitucion" or texto_lower == "constitución":
+        respuesta_const = formatear_resumen_constitucion(idioma)
+        memory.registrar_consulta(telefono, texto, respuesta_const, "menu", idioma, "constitucion")
+        return respuesta_const
+
+    if texto_lower == "8" or texto_lower == "ohada":
+        respuesta_ohada = formatear_resumen_ohada(idioma)
+        memory.registrar_consulta(telefono, texto, respuesta_ohada, "menu", idioma, "ohada")
+        return respuesta_ohada
+
+    if texto_lower == "9" or texto_lower == "historia" or texto_lower == "historia de guinea ecuatorial":
+        respuesta_hist = formatear_resumen_historia(idioma)
+        memory.registrar_consulta(telefono, texto, respuesta_hist, "menu", idioma, "historia")
+        return respuesta_hist
 
     # === Consejos periódicos ===
     if sesion["mensajes_count"] % 5 == 0:

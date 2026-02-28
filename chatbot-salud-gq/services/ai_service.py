@@ -1,7 +1,7 @@
 """
-Servicio de IA: Genera respuestas médicas inteligentes usando OpenAI.
-Integra la base de conocimiento local con la capacidad de GPT.
-Registra TODAS las interacciones para aprendizaje continuo.
+Servicio de IA: Genera respuestas inteligentes usando OpenAI.
+Integra la base de conocimiento local (salud, constitución, OHADA, historia)
+con la capacidad de GPT. Registra TODAS las interacciones para aprendizaje continuo.
 """
 
 import logging
@@ -21,6 +21,9 @@ from knowledge.centros_salud import (
     EMERGENCIAS,
 )
 from knowledge.idioma_fang import obtener_frase, VOCABULARIO_MEDICO
+from knowledge.constitucion_gq import buscar_constitucion, formatear_constitucion, formatear_resumen_constitucion
+from knowledge.ohada import buscar_ohada, formatear_ohada, formatear_resumen_ohada
+from knowledge.historia_gq import buscar_historia, formatear_historia, formatear_resumen_historia
 from services.knowledge_memory import KnowledgeMemory
 
 logger = logging.getLogger(__name__)
@@ -51,6 +54,22 @@ CATEGORIAS_KEYWORDS = {
     "prevencion": [
         "prevenir", "prevencion", "prevención", "vacuna", "proteger",
         "mosquitero", "repelente", "higiene", "agua potable", "lavarse",
+    ],
+    "constitucion": [
+        "constitución", "constitucion", "ley fundamental", "derechos",
+        "deberes", "poder ejecutivo", "poder legislativo", "poder judicial",
+        "presidente", "parlamento", "senado", "diputado", "tribunal",
+        "bandera", "himno", "escudo", "símbolo", "simbolo",
+    ],
+    "ohada": [
+        "ohada", "derecho mercantil", "acta uniforme", "empresa",
+        "sociedad", "sarl", "comercial", "arbitraje", "ccja",
+        "crear empresa", "negocio", "emprender",
+    ],
+    "historia": [
+        "historia", "independencia", "colonial", "colonia", "portugal",
+        "precolonial", "macías", "macias", "obiang", "1968",
+        "etnia", "fang", "bubi", "ndowé", "ndowe", "fernandino",
     ],
 }
 
@@ -212,6 +231,21 @@ class AIService:
             palabra in ciudades for palabra in palabras_msg
         ):
             return self._buscar_centros_salud(mensaje, idioma)
+
+        # Buscar en Constitución
+        secciones_const = buscar_constitucion(mensaje)
+        if secciones_const:
+            return formatear_constitucion(secciones_const, idioma)
+
+        # Buscar en OHADA
+        secciones_ohada = buscar_ohada(mensaje)
+        if secciones_ohada:
+            return formatear_ohada(secciones_ohada, idioma)
+
+        # Buscar en Historia
+        secciones_hist = buscar_historia(mensaje)
+        if secciones_hist:
+            return formatear_historia(secciones_hist, idioma)
 
         return None
 
@@ -392,6 +426,27 @@ class AIService:
             nombres = [enf["nombre_es"] for _, enf in resultados_sintomas]
             contexto_partes.append(
                 f"Enfermedades posibles por síntomas: {', '.join(nombres)}"
+            )
+
+        # Contexto de constitución
+        secciones_const = buscar_constitucion(mensaje_lower)
+        if secciones_const:
+            contexto_partes.append(
+                f"Tema constitucional detectado: {', '.join(secciones_const)}"
+            )
+
+        # Contexto de OHADA
+        secciones_ohada = buscar_ohada(mensaje_lower)
+        if secciones_ohada:
+            contexto_partes.append(
+                f"Tema OHADA detectado: {', '.join(secciones_ohada)}"
+            )
+
+        # Contexto de historia
+        secciones_hist = buscar_historia(mensaje_lower)
+        if secciones_hist:
+            contexto_partes.append(
+                f"Tema histórico detectado: {', '.join(secciones_hist)}"
             )
 
         return "\n\n".join(contexto_partes)

@@ -73,22 +73,32 @@ FRASES = {
     "menu_principal": {
         "es": (
             "¿Qué necesitas saber?\n\n"
+            "*Salud:*\n"
             "1. Consultar síntomas\n"
             "2. Buscar centro de salud cercano\n"
             "3. Lista de enfermedades comunes\n"
             "4. Números de emergencia\n"
             "5. Cambiar idioma (Español/Fang)\n"
             "6. Primeros auxilios\n\n"
+            "*Guinea Ecuatorial:*\n"
+            "7. Constitución de GQ\n"
+            "8. OHADA (Derecho Mercantil)\n"
+            "9. Historia de Guinea Ecuatorial\n\n"
             "Escribe el número o describe lo que necesitas."
         ),
         "fang": (
             "Akié wo a yem?\n\n"
+            "*Salud:*\n"
             "1. Bisá minsón ya eki\n"
             "2. Sili centro ya salud e ne meki\n"
             "3. Lista ya beki bi ne ntangan\n"
             "4. Números ya emergencia\n"
             "5. Chañe idioma (Español/Fang)\n"
             "6. Primeros auxilios\n\n"
+            "*Guinea Ecuatorial:*\n"
+            "7. Constitución ya GQ\n"
+            "8. OHADA (Derecho Mercantil)\n"
+            "9. Historia ya Guinea Ecuatorial\n\n"
             "Fila número o tege akié wo a yem."
         ),
     },

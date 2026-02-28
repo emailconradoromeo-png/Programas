@@ -7,12 +7,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# ==================== WhatsApp Business API (Meta Cloud API) ====================
-WHATSAPP_TOKEN = os.getenv("WHATSAPP_TOKEN", "")
-WHATSAPP_PHONE_NUMBER_ID = os.getenv("WHATSAPP_PHONE_NUMBER_ID", "")
-WHATSAPP_VERIFY_TOKEN = os.getenv("WHATSAPP_VERIFY_TOKEN", "chatbot_salud_gq_2024")
-WHATSAPP_BOT_NUMBER = os.getenv("WHATSAPP_BOT_NUMBER", "00240555773537")
-WHATSAPP_API_URL = "https://graph.facebook.com/v18.0"
+# ==================== Green API (WhatsApp) ====================
+GREEN_API_INSTANCE_ID = os.getenv("GREEN_API_INSTANCE_ID", "")
+GREEN_API_TOKEN = os.getenv("GREEN_API_TOKEN", "")
 
 # ==================== OpenAI API ====================
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
@@ -31,8 +28,10 @@ DEFAULT_LANGUAGE = "es"
 SESSION_TIMEOUT_MINUTES = 30
 
 # ==================== Prompt del sistema para la IA ====================
-SYSTEM_PROMPT = """Eres un asistente médico virtual especializado para Guinea Ecuatorial.
-Tu nombre es "Asistente de Salud GQ" (en fang: "Asistente ya Salud GQ").
+SYSTEM_PROMPT = """Eres un asistente virtual especializado para Guinea Ecuatorial.
+Tu nombre es "Asistente GQ" (en fang: "Asistente ya GQ").
+Tienes conocimiento sobre salud, la Constitución de GQ, la OHADA (derecho mercantil)
+y la historia de Guinea Ecuatorial.
 
 REGLAS FUNDAMENTALES:
 1. NUNCA diagnostiques. Siempre recomienda acudir al centro de salud.
